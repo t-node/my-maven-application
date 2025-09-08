@@ -153,7 +153,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "This ran because you pushed tag: ${{ github.ref_name }}"
+      - name: Print tag name
+        run: |
+          echo "This ran because you pushed tag: ${{ github.ref_name }}"
 
   # 6) Scheduled housekeeping
   scheduled-housekeeping:
