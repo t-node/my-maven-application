@@ -53,7 +53,8 @@ jobs:
           who: ${{ github.actor }}
 
       - name: Log custom action output
-        run: echo "Action says: ${{ steps.hello.outputs.greeting }}"
+        run: |
+          echo "Action says: ${{ steps.hello.outputs.greeting }}"
 
   # 2) Main Linux CI job (cheapest GH-hosted runner). Demonstrates:
   #    - Marketplace actions + semantic versions
