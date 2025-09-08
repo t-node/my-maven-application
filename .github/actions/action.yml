@@ -1,0 +1,27 @@
+name: "Say Hello"
+description: "Tiny composite action that returns a greeting"
+author: "You"
+
+branding:
+  icon: message-circle
+  color: blue
+
+inputs:
+  who:
+    description: "Who to greet"
+    required: false
+    default: "World"
+
+outputs:
+  greeting:
+    description: "The computed greeting"
+    value: ${{ steps.compose.outputs.greeting }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: compose
+      name: Compose greeting
+      shell: bash
+      run: |
+        echo "greeting=Hello, ${{ inputs.who }}!" >> "$GITHUB_OUTPUT"

@@ -1,11 +1,13 @@
-package org.example;
+package com.example;
 
 public class App {
-    public static void main(String[] args) {
-        System.out.println("Hello, GitHub Actions!");
+    public static String hello(String who) {
+        if (who == null || who.isBlank()) who = "World";
+        return "Hello, " + who + "!";
     }
 
-    public static String getMessage() {
-        return "Hello, GitHub Actions!";
+    public static void main(String[] args) {
+        String who = System.getenv().getOrDefault("WHO", "GitHub Actions");
+        System.out.println(hello(who));
     }
 }

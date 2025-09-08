@@ -1,0 +1,179 @@
+name: "Universal Pipeline Demo (Java Maven)"
+
+# ─────────────────────────────────────────────────────────────────────
+# TRIGGERS / EVENTS (covering everything we discussed)
+# ─────────────────────────────────────────────────────────────────────
+on:
+  # Git events with qualifiers (branches / tags / paths)
+  push:
+    branches: [ "main", "rel/*" ]       # Only default + release branches
+    tags:     [ "v*" ]                   # Version-like tags e.g., v1.0.0
+    paths:    [ "**.java", "pom.xml" ]   # Only when Java source or pom changes
+  pull_request:
+    branches: [ "main" ]
+
+  # Less common: issue comments (requires this file on default branch!)
+  issue_comment:
+    types: [ created ]
+
+  # Manual trigger with input
+  workflow_dispatch:
+    inputs:
+      run-tests:
+        description: "Run unit tests?"
+        type: boolean
+        default: true
+
+  # External trigger from API (see curl example below)
+  repository_dispatch:
+    types: [ "external-run" ]
+
+  # CRON schedule (NOTE: shorthands like @daily are NOT supported)
+  schedule:
+    - cron: "30 5,15 * * *"   # 05:30 and 15:30 UTC daily
+
+# ─────────────────────────────────────────────────────────────────────
+# JOBS
+# ─────────────────────────────────────────────────────────────────────
+jobs:
+
+  # 1) React to PR comments containing "/hello"
+  greet-on-comment:
+    if: >
+      github.event_name == 'issue_comment' &&
+      github.event.action == 'created' &&
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/hello')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use CUSTOM ACTION to greet commenter
+        id: hello
+        uses: ./.github/actions/say-hello
+        with:
+          who: ${{ github.actor }}
+
+      - name: Log custom action output
+        run: echo "Action says: ${{ steps.hello.outputs.greeting }}"
+
+  # 2) Main Linux CI job (cheapest GH-hosted runner). Demonstrates:
+  #    - Marketplace actions + semantic versions
+  #    - With inputs
+  #    - Optional tests controlled by manual input
+  #    - Producing artifacts (storage)
+  linux-ci:
+    if: github.event_name != 'schedule'  # keep cron job separate for clarity
+    runs-on: ubuntu-latest
+    outputs:
+      greeting: ${{ steps.hello.outputs.greeting }}
+    steps:
+      - name: Checkout (pinned by major tag)
+        uses: actions/checkout@v4
+
+      - name: Setup Java (Temurin) + Maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build (skip tests first)
+        run: mvn -B -ntp -DskipTests package
+
+      - name: Optional unit tests
+        if: ${{ inputs.run-tests || github.event_name != 'workflow_dispatch' }}
+        run: mvn -B -ntp test
+
+      - name: Generate demo artifacts (bash)
+        run: ./scripts/generate-report.sh
+
+      - name: Say hello (custom composite action)
+        id: hello
+        uses: ./.github/actions/say-hello
+        with:
+          who: "Linux-${{ runner.os }}"
+
+      - name: Upload artifacts (counts toward storage)
+        uses: actions/upload-artifact@v4
+        with:
+          name: "reports-${{ runner.os }}"
+          path: reports/
+
+  # 3) Use a REUSABLE workflow (workflow_call) from the same repo
+  call-reusable:
+    needs: [ linux-ci ]
+    uses: ./.github/workflows/reusable-ci.yml
+    with:
+      java-version: '21'
+      artifact-name: 'build-from-reusable'
+      run-tests: true
+    secrets: inherit   # pass through repo/org secrets if needed
+
+  # 4) Demonstrate OS differences (Windows ~2x cost, macOS ~10x vs Linux)
+  macos-check:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+      - run: java -version
+      - name: Generate artifacts
+        run: ./scripts/generate-report.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "reports-${{ runner.os }}"
+          path: reports/
+
+  windows-check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+      - name: Print Java version (PowerShell)
+        run: java -version
+        shell: pwsh
+      - name: Generate artifacts (PowerShell)
+        run: ./scripts/generate-report.ps1
+        shell: pwsh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "reports-${{ runner.os }}"
+          path: reports/
+
+  # 5) Run only on TAGGED releases
+  on-tag-release:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "This ran because you pushed tag: ${{ github.ref_name }}"
+
+  # 6) Scheduled housekeeping
+  scheduled-housekeeping:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Cron housekeeping at $(date -u +%FT%TZ)"
+
+  # 7) Triggered externally via repository_dispatch
+  external-trigger:
+    if: github.event_name == 'repository_dispatch' && github.event.action == 'external-run'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump external payload
+        run: echo '${{ toJson(github.event.client_payload) }}'
+
+  # 8) Consume OUTPUT from another job
+  use-job-output:
+    needs: [ linux-ci ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo greeting
+        run: |
+          echo "Greeting from linux-ci was: '${{ needs.linux-ci.outputs.greeting }}'"
