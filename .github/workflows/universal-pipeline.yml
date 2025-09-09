@@ -46,6 +46,8 @@ jobs:
       contains(github.event.comment.body, '/hello')
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
       - name: Use CUSTOM ACTION to greet commenter
         id: hello
         uses: ./.github/actions/say-hello
