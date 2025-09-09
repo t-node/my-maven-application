@@ -7,7 +7,7 @@ public class App {
     }
 
     public static void main(String[] args) {
-        String who = System.getenv().getOrDefault("WHO", "GitHub Actions are new");
+        String who = System.getenv().getOrDefault("WHO", "GitHub Actions are new for the first time");
         System.out.println(hello(who));
     }
 }
