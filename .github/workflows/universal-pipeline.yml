@@ -87,7 +87,7 @@ jobs:
         run: mvn -B -ntp test
 
       - name: Generate demo artifacts (bash)
-        run: ./scripts/generate-report.sh
+        run: bash scripts/generate-report.sh
 
       - name: Say hello (custom composite action)
         id: hello
