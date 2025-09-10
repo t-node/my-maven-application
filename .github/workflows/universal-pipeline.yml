@@ -123,7 +123,7 @@ jobs:
           cache: 'maven'
       - run: java -version
       - name: Generate artifacts
-        run: ./scripts/generate-report.sh
+        run:  bash scripts/generate-report.sh
       - uses: actions/upload-artifact@v4
         with:
           name: "reports-${{ runner.os }}"
