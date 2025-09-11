@@ -71,11 +71,12 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
-     - name: Build with Maven
-       run: mvn -B -ntp -DskipTests package
-       
-     - name: Display OS info
-       run: |
-        echo "OS: ${{ matrix.os }}"
-        echo "Runner OS: ${{ runner.os }}"
+      - name: Build with Maven
+        run: mvn -B -ntp -DskipTests package
+
+      - name: Display OS info
+        run: |
+          echo "OS: ${{ matrix.os }}"
+          echo "Runner OS: ${{ runner.os }}"
+      
      
