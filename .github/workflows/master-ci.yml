@@ -1,0 +1,56 @@
+name: "Ultimate Mastery CI/CD"
+on:
+  push:
+    branches: ["main","release/*"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      run-tests:
+        description: "Run unit tests?"
+        type: boolean
+        default: true
+      timeout-minutes:
+        description: "Timeout in minutes"
+        type: number
+        default: 10
+      deploy-env:
+        description: "Deploy environment"
+        required: true
+        type: choice
+        default: 'staging'
+        options:
+          - staging
+          - production
+          - development
+  repository_dispatch:  # Fixed: Correct indentation
+    types: [external-build]
+  schedule:
+    - cron: "30 5,15 * * *"
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    outputs:
+      build-time: ${{ steps.build-time.outputs.build-time }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+      - name: Build with Maven
+        run: mvn -B -ntp -DskipTests package 
+      - name: Run tests with Maven
+        if: ${{inputs.run-tests || github.event_name != 'workflow_dispatch'}}
+        run: mvn -B -ntp test 
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'build-artifact'
+          path: 'target/*.jar'
+      - name: Set build time output
+        id: build-time
+        run: echo "build-time=$(date +%s)" >> $GITHUB_OUTPUT
