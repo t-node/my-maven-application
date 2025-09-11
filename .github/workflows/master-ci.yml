@@ -66,6 +66,15 @@ jobs:
         with:
           who: "Linux-${{ runner.os }}"
   
+  consume-outputs:
+    runs-on: ubuntu-latest
+    needs: [hello-job,build-linux]
+    steps:
+      - name: Echo greeting
+        run: |
+          echo "Greeting from hello-job was: '${{ needs.build-linux.outputs.greeting }}"
+          echo "Greeting from hello-job was: '${{ needs.hello-job.outputs.greeting }}"
+  
   build-matrix:
     runs-on: ${{ matrix.os }}
     strategy:
