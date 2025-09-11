@@ -23,13 +23,15 @@ on:
           - staging
           - production
           - development
-  repository_dispatch:
-        types: [external-build]
+  repository_dispatch:  # Fixed: Correct indentation
+    types: [external-build]
   schedule:
     - cron: "30 5,15 * * *"
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    outputs:
+      build-time: ${{ steps.build-time.outputs.build-time }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
