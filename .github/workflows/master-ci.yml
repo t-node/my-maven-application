@@ -54,6 +54,7 @@ jobs:
       - name: Set build time output
         id: build-time
         run: echo "build-time=$(date +%s)" >> $GITHUB_OUTPUT
+        
   build-matrix:
     runs-on: ${{ matrix.os }}
     strategy:
