@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: say Hello (Composite  Action Here)
-        uses: .github/actions/say-hello
+        uses: ./.github/actions/say-hello
         id: hello
         with:
           who: "Linux-${{ runner.os }}"
