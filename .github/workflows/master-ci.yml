@@ -1,7 +1,7 @@
 name: "Ultimate Mastery CI/CD"
 on:
   push:
-    branches: ["main","release/*"]
+    branches: ["main","hello"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -57,6 +57,8 @@ jobs:
         
   hello-job:
     runs-on: ubuntu-latest
+    outputs:
+      build-time: ${{ steps.hello.outputs.greeting }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
