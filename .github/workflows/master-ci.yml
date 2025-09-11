@@ -74,7 +74,7 @@ jobs:
     steps:
       - name: Echo greeting
         run: |
-          echo "Greeting from hello-job was: '${{ needs.build-linux.outputs.build-time }}"
+          echo "Greeting from build-time was: '${{ needs.build-linux.outputs.build-time }}"
           echo "Greeting from hello-job was: '${{ needs.hello-job.outputs.greeting }}"
   
   build-matrix:
