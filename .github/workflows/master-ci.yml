@@ -84,10 +84,10 @@ jobs:
       
       - name: Generate artifacts
         run: | 
-        echo "report" > report.txt
-        echo "Build Completed" >> report.txt
-        echo "Runner OS: ${{ runner.os }}" >> report.txt
-        echo "Matrix OS: ${{ matrix.os }}" >> report.txt
+          echo "report" > report.txt
+          echo "Build Completed" >> report.txt
+          echo "Runner OS: ${{ runner.os }}" >> report.txt
+          echo "Matrix OS: ${{ matrix.os }}" >> report.txt
 
       - name: Upload matrix report
         uses: actions/upload-artifact@v4
