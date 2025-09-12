@@ -28,6 +28,11 @@ on:
     types: [external-build]
   schedule:
     - cron: "30 5,15 * * *"
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
