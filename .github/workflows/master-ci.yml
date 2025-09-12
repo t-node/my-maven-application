@@ -67,7 +67,7 @@ jobs:
         id: hello
         with:
           who: "Linux-${{ runner.os }}"
-      - name: say Hello (Composite  Action Here)
+      - name: say Hola! (Composite  Action Hola!)
         uses: ./.github/actions/say-Hola!
         id: hola
         with:
