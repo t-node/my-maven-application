@@ -67,6 +67,12 @@ jobs:
         id: hello
         with:
           who: "Linux-${{ runner.os }}"
+      - name: say Hello (Composite  Action Here)
+        uses: ./.github/actions/say-Hola!
+        id: hola
+        with:
+          who: "Linux-${{ runner.os }}"
+          bookname: "LinuxBookAdministration-${{ runner.os }}"
   
   consume-outputs:
     runs-on: ubuntu-latest
