@@ -62,13 +62,13 @@ jobs:
           path: 'target/*.jar'
       - name: Set build time output
         id: build-time
-        run: echo "build-time=$(date +%s) ${{vars.CI_STAGE}}" >> $GITHUB_OUTPUT
+        run: echo "build-time=$(date +%s) Variable :${{vars.CI_STAGE}}" >> $GITHUB_OUTPUT
 
   call-reusable:
     uses: ./.github/workflows/reusable.yml
     with:
       java-version: '21'
-      artifact-name: 'build-from-reusable'
+      artifact-name: ${{vars.CI_STAGE}}
     secrets: inherit   # pass through repo/org secrets if needed
 
 
