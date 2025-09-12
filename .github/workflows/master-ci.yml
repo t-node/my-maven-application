@@ -93,7 +93,12 @@ jobs:
         run: echo "Deploying to ${{ inputs.deploy-env }}"
       - name: Deploy to production
         if: inputs.deploy-env == 'production'
-        run: echo "Deploying to production with key ${{ inputs.deploy-env }}"
+        run: |
+          echo "Deploying to production with key ${{ secrets.DEPLOY_KEY }}"
+          echo "Production deployment completed"
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+
 
 
   build-matrix:
