@@ -33,6 +33,9 @@ defaults:
   run:
     shell: bash
 
+env:
+  CI_STAGE: ${{ vars.STAGE_NAME}}
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -59,7 +62,7 @@ jobs:
           path: 'target/*.jar'
       - name: Set build time output
         id: build-time
-        run: echo "build-time=$(date +%s)" >> $GITHUB_OUTPUT
+        run: echo "build-time=$(date +%s) ${{vars.CI_STAGE}}" >> $GITHUB_OUTPUT
 
   call-reusable:
     uses: ./.github/workflows/reusable.yml
