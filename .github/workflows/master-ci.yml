@@ -63,7 +63,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        
+
       - name: say Hola! (Composite  Action Hola!)
         uses: ./.github/actions/say-Hola!
         id: hola
@@ -79,6 +79,8 @@ jobs:
         run: |
           echo "Greeting from build-time was: '${{ needs.build-linux.outputs.build-time }}"
           echo "Greeting from hello-job was: '${{ needs.hello-job.outputs.greeting }}"
+          echo "BookName from hello-job was: '${{ needs.hello-job.outputs.bookName }}"
+          
   
   external-trigger:
     if: github.event_name == 'repository_dispatch' && github.event.action == 'external-build'
@@ -101,8 +103,6 @@ jobs:
           echo "Production deployment completed"
         env:
           DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
-
-
 
   build-matrix:
     runs-on: ${{ matrix.os }}
