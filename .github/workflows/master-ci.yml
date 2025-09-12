@@ -63,11 +63,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-      - name: say Hello (Composite  Action Here)
-        uses: ./.github/actions/say-hello
-        id: hello
-        with:
-          who: "Linux-${{ runner.os }}"
+        
       - name: say Hola! (Composite  Action Hola!)
         uses: ./.github/actions/say-Hola!
         id: hola
