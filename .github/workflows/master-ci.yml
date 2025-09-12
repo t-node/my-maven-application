@@ -77,6 +77,25 @@ jobs:
           echo "Greeting from build-time was: '${{ needs.build-linux.outputs.build-time }}"
           echo "Greeting from hello-job was: '${{ needs.hello-job.outputs.greeting }}"
   
+  external-trigger:
+    if: github.event_name == 'repository_dispatch' && github.event.action == 'external-build'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump external payload
+        run: echo '${{ toJson(github.event.client_payload) }}'
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: [build-linux]
+    steps:
+      - name: Deploy
+        if: inputs.deploy-env == 'staging'
+        run: echo "Deploying to ${{ inputs.deploy-env }}"
+        if: inputs.deploy-env == 'production'
+        run: echo "Deploying to production with key ${{ inputs.deploy-env }}"
+
+
   build-matrix:
     runs-on: ${{ matrix.os }}
     strategy:
