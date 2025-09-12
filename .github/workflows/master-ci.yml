@@ -56,11 +56,10 @@ jobs:
         run: echo "build-time=$(date +%s)" >> $GITHUB_OUTPUT
 
   call-reusable:
-    uses: ./.github/workflows/reusable-ci.yml
+    uses: ./.github/workflows/reusable.yml
     with:
       java-version: '21'
       artifact-name: 'build-from-reusable'
-      run-tests: true
     secrets: inherit   # pass through repo/org secrets if needed
 
 
