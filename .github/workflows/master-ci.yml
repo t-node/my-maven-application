@@ -1,7 +1,8 @@
 name: "Ultimate Mastery CI/CD"
+
 on:
   push:
-    branches: ["main","hello"]
+    branches: ["main", "hello"]  # Fixed: Added space
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -23,10 +24,11 @@ on:
           - staging
           - production
           - development
-  repository_dispatch:  # Fixed: Correct indentation
+  repository_dispatch:
     types: [external-build]
   schedule:
     - cron: "30 5,15 * * *"
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -35,26 +37,31 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+      
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
           cache: 'maven'
+      
       - name: Build with Maven
-        run: mvn -B -ntp -DskipTests package 
+        run: mvn -B -ntp -DskipTests package
+      
       - name: Run tests with Maven
-        if: ${{inputs.run-tests || github.event_name != 'workflow_dispatch'}}
-        run: mvn -B -ntp test 
-      - name: upload artifact
+        if: ${{ inputs.run-tests || github.event_name != 'workflow_dispatch' }}  # Fixed: Added space
+        run: mvn -B -ntp test
+      
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: 'build-artifact'
           path: 'target/*.jar'
+      
       - name: Set build time output
         id: build-time
-        run: echo "build-time=$(date +%s)" >> $GITHUB_OUTPUT
-        
+        run: echo "build-time=$(date -u +%FT%TZ)" >> $GITHUB_OUTPUT  # Fixed: ISO format
+
   hello-job:
     runs-on: ubuntu-latest
     outputs:
@@ -62,21 +69,22 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-      - name: say Hello (Composite  Action Here)
+      
+      - name: Say hello from ${{ runner.os }}
         uses: ./.github/actions/say-hello
         id: hello
         with:
           who: "Linux-${{ runner.os }}"
-  
+
   consume-outputs:
     runs-on: ubuntu-latest
-    needs: [hello-job,build-linux]
+    needs: [hello-job, build-linux]  # Fixed: Added space
     steps:
       - name: Echo greeting
         run: |
-          echo "Greeting from build-time was: '${{ needs.build-linux.outputs.build-time }}"
-          echo "Greeting from hello-job was: '${{ needs.hello-job.outputs.greeting }}"
-  
+          echo "Greeting from build-time was: '${{ needs.build-linux.outputs.build-time }}'"  # Fixed: Added quote
+          echo "Greeting from hello-job was: '${{ needs.hello-job.outputs.greeting }}'"  # Fixed: Added quote
+
   external-trigger:
     if: github.event_name == 'repository_dispatch' && github.event.action == 'external-build'
     runs-on: ubuntu-latest
@@ -91,10 +99,10 @@ jobs:
       - name: Deploy to staging
         if: inputs.deploy-env == 'staging'
         run: echo "Deploying to ${{ inputs.deploy-env }}"
+      
       - name: Deploy to production
         if: inputs.deploy-env == 'production'
         run: echo "Deploying to production with key ${{ inputs.deploy-env }}"
-
 
   build-matrix:
     runs-on: ${{ matrix.os }}
@@ -135,5 +143,3 @@ jobs:
         with:
           name: 'matrix-report-${{ runner.os }}'
           path: 'report.txt'
-      
-     
