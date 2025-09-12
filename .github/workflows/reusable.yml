@@ -13,6 +13,13 @@ on:
         default: "app-jar"
         type: string
 
+defaults:
+  run:
+    shell: bash
+
+env:
+  CI_STAGE: ${{ vars.STAGE_NAME }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
