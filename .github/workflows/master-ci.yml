@@ -58,7 +58,8 @@ jobs:
   hello-job:
     runs-on: ubuntu-latest
     outputs:
-      greeting: ${{ steps.hello.outputs.greeting }}
+      greeting: ${{ steps.hola.outputs.greeting }}
+      bookName: ${{ steps.hola.outputs.bookName }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4

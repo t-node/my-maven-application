@@ -26,4 +26,4 @@ runs:
       shell: bash
       run: |
         echo "greeting=Hola, ${{ inputs.who }}!" >> "$GITHUB_OUTPUT"
-        echo "bookName=Hola, ${{ inputs.bookname }}!" >> "$GITHUB_OUTPUT"
+        echo "bookName=Hola Book Name is , ${{ inputs.bookname }}!" >> "$GITHUB_OUTPUT"
