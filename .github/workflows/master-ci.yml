@@ -54,7 +54,16 @@ jobs:
       - name: Set build time output
         id: build-time
         run: echo "build-time=$(date +%s)" >> $GITHUB_OUTPUT
-        
+
+  call-reusable:
+    uses: ./.github/workflows/reusable-ci.yml
+    with:
+      java-version: '21'
+      artifact-name: 'build-from-reusable'
+      run-tests: true
+    secrets: inherit   # pass through repo/org secrets if needed
+
+
   hello-job:
     runs-on: ubuntu-latest
     outputs:
@@ -81,14 +90,13 @@ jobs:
           echo "Greeting from hello-job was: '${{ needs.hello-job.outputs.greeting }}"
           echo "BookName from hello-job was: '${{ needs.hello-job.outputs.bookName }}"
           
-  
   external-trigger:
     if: github.event_name == 'repository_dispatch' && github.event.action == 'external-build'
     runs-on: ubuntu-latest
     steps:
       - name: Dump external payload
         run: echo '${{ toJson(github.event.client_payload) }}'
-
+   
   deploy:
     runs-on: ubuntu-latest
     needs: [build-linux]
