@@ -92,6 +92,7 @@ jobs:
       - name: Deploy
         if: inputs.deploy-env == 'staging'
         run: echo "Deploying to ${{ inputs.deploy-env }}"
+      - name: Deploy to production
         if: inputs.deploy-env == 'production'
         run: echo "Deploying to production with key ${{ inputs.deploy-env }}"
 
