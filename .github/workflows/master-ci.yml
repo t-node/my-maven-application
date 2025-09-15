@@ -72,7 +72,7 @@ jobs:
     uses: ./.github/workflows/reusable.yml
     with:
       java-version: '21'
-      artifact-name: ${{ env.CI_STAGE }}
+      artifact-name: 'book.jar'
     secrets: inherit   # pass through repo/org secrets if needed
 
 
