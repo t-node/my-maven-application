@@ -34,7 +34,7 @@ defaults:
     shell: bash
 
 env:
-  CI_STAGE: "I AM GLOBAL"
+  CI_STAGE: ${{ vars.STAGE_NAME }}
 
 jobs:
   build-linux:
