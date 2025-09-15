@@ -34,7 +34,7 @@ defaults:
     shell: bash
 
 env:
-  CI_STAGE: ${{ vars.STAGE_NAME}}
+  CI_STAGE: "I AM GLOBAL"
 
 jobs:
   build-linux:
@@ -74,6 +74,7 @@ jobs:
 
   hello-job:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       greeting: ${{ steps.hola.outputs.greeting }}
       bookName: ${{ steps.hola.outputs.bookName }}
