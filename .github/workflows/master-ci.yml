@@ -64,15 +64,15 @@ jobs:
         id: build-time
         run: |
           echo "build-time=$(date +%s)" >> $GITHUB_OUTPUT
-          echo "ci-stage=${{ vars.CI_STAGE }}" >> $GITHUB_OUTPUT
+          echo "ci-stage=${{ env.CI_STAGE }}" >> $GITHUB_OUTPUT
           echo "Build time set: $(date +%s)"
-          echo "CI Stage: ${{ vars.CI_STAGE }}"
+          echo "CI Stage: ${{ env.CI_STAGE }}"
 
   call-reusable:
     uses: ./.github/workflows/reusable.yml
     with:
       java-version: '21'
-      artifact-name: ${{vars.CI_STAGE}}
+      artifact-name: ${{env.CI_STAGE}}
     secrets: inherit   # pass through repo/org secrets if needed
 
 
