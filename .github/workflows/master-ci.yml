@@ -36,6 +36,9 @@ defaults:
 env:
   CI_STAGE: ${{ vars.STAGE_NAMEREPO || 'DEFAULT STAGE' }}
 
+permissions:
+  contents: read
+
 
 concurrency:
   group: ${{ github.workflow}}-${{ github.ref }} 
@@ -48,7 +51,9 @@ jobs:
       build-time: ${{ steps.build-time.outputs.build-time }}
     steps:
       - name: Print environment variable
-        run: echo "CI Stage ${{ env.CI_STAGE }}"
+        run: |
+          echo "CI Stage ${{ env.CI_STAGE }}"
+          who="${{ github.event.inputs.who || 'World' }}"
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Setup Java
