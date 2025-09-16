@@ -119,7 +119,6 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         language: [java, python, node]
     runs-on: ${{ matrix.os }}
-    if: ${{ !(matrix.os == 'windows-latest' && matrix.language == 'java') }}
     steps:
       - uses: actions/checkout@v4
 
