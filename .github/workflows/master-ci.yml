@@ -118,29 +118,29 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         language: [java, python, node]
-      runs-on: ${{ matrix.os }}
-      if: ${{ !(matrix.os == 'windows-latest' && matrix.language == 'java') }}
-      steps:
-        - uses: actions/checkout@v4
+    runs-on: ${{ matrix.os }}
+    if: ${{ !(matrix.os == 'windows-latest' && matrix.language == 'java') }}
+    steps:
+      - uses: actions/checkout@v4
 
-        - name: Node setup
-          if: ${{ matrix.language == 'node' }}
-          uses: actions/setup-node@v4
-          with:
-            node-version: '20'
+      - name: Node setup
+        if: ${{ matrix.language == 'node' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-        - name: Python setup
-          if: ${{ matrix.language == 'python' }}
-          uses: actions/setup-python@v5
-          with:
-            python-version: '3.11'
+      - name: Python setup
+        if: ${{ matrix.language == 'python' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-        - name: Java setup
-          if: ${{ matrix.language == 'java' }}
-          uses: actions/setup-java@v4
-          with:
-            distribution: temurin
-            java-version: '21'
+      - name: Java setup
+        if: ${{ matrix.language == 'java' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
 
   call-reusable:
     uses: ./.github/workflows/reusable.yml
