@@ -63,6 +63,25 @@ jobs:
         run: |
           who="${{ github.event.inputs.who || 'World' }}"
           echo "greeting=Hello, ${who}" >> $GITHUB_OUTPUT 
+      - name: Summary (Plan)
+        run: |
+          {
+            echo "## Plan"
+            echo ""
+            echo "- Event: \`${{ github.event_name }}\`"
+            echo "- Who: \`${{ github.event.inputs.who || 'World' }}\`"
+            echo "- CI Stage: \`${{ env.CI_STAGE }}\`"
+            echo "- Greeting: \`${{ steps.out.outputs.greeting }}\`"
+            echo ""
+            echo "## Actions"
+            echo ""
+            echo "- Checkout repo"
+            echo "- Setup Java"
+            echo "- Build with Maven"
+            echo "- Run tests with Maven"
+            echo "- Upload artifact"
+            echo "- Set build time output"
+          } >> "$GITHUB_STEP_SUMMARY"    
       - name: UseTheAnswer
         run: |
           echo "Greeting: ${{ steps.out.outputs.greeting }}" 
