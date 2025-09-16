@@ -43,7 +43,7 @@ jobs:
       build-time: ${{ steps.build-time.outputs.build-time }}
     steps:
       - name: Print environment variable
-        run: echo "CI Stage: ${{ env.CI_STAGE }}"
+        run: echo "CI Stage ${{ env.CI_STAGE }}"
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Setup Java
