@@ -70,7 +70,7 @@ jobs:
       - name: Set build time output
         id: build-time
         run: |
-          echo "builddxpx-time=$(date +%s)" >> $GITHUB_OUTPUT
+          echo "builddxpxx-time=$(date +%s)" >> $GITHUB_OUTPUT
           echo "ci-stages=${{ env.CI_STAGE }}" >> $GITHUB_OUTPUT
           echo "Build time set: $(date +%s)"
           echo "CI Stage: ${{ env.CI_STAGE }}"
