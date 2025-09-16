@@ -25,7 +25,7 @@ jobs:
           restore-keys: |
             ${{ runner.os}}-
       - name: Install dependencies
-        run: npm ci || true
+        run: npm install || true
       - name: Cache pip
         id: cache-pip
         uses: actions/cache@v3
