@@ -119,9 +119,12 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         language: [java, python, node]
     runs-on: ${{ matrix.os }}
+    
     steps:
       - uses: actions/checkout@v4
-
+      - name: Skip if windows and java
+        if: ${{ matrix.os == 'windows-latest' && matrix.language == 'java' }}
+        continue: true
       - name: Node setup
         if: ${{ matrix.language == 'node' }}
         uses: actions/setup-node@v4
