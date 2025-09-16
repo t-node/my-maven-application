@@ -12,25 +12,25 @@ name: "Universal Pipeline Demo (Java Maven)"
 #   pull_request:
 #     branches: [ "main" ]
 
-  # Less common: issue comments (requires this file on default branch!)
-  issue_comment:
-    types: [ created ]
+#   # Less common: issue comments (requires this file on default branch!)
+#   issue_comment:
+#     types: [ created ]
 
-  # Manual trigger with input
-  workflow_dispatch:
-    inputs:
-      run-tests:
-        description: "Run unit tests?"
-        type: boolean
-        default: true
+#   # Manual trigger with input
+#   workflow_dispatch:
+#     inputs:
+#       run-tests:
+#         description: "Run unit tests?"
+#         type: boolean
+#         default: true
 
-  # External trigger from API (see curl example below)
-  repository_dispatch:
-    types: [ "external-run" ]
+#   # External trigger from API (see curl example below)
+#   repository_dispatch:
+#     types: [ "external-run" ]
 
-  # CRON schedule (NOTE: shorthands like @daily are NOT supported)
-  schedule:
-    - cron: "30 5,15 * * *"   # 05:30 and 15:30 UTC daily
+#   # CRON schedule (NOTE: shorthands like @daily are NOT supported)
+#   schedule:
+#     - cron: "30 5,15 * * *"   # 05:30 and 15:30 UTC daily
 
 # ─────────────────────────────────────────────────────────────────────
 # JOBS
