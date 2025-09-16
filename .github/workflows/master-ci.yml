@@ -15,6 +15,10 @@ on:
         description: "Timeout in minutes"
         type: number
         default: 10
+      who:
+        description: "Who to greet"
+        type: string
+        default: "World"
       deploy-env:
         description: "Deploy environment"
         required: true
@@ -53,7 +57,11 @@ jobs:
       - name: Print environment variable
         run: |
           echo "CI Stage ${{ env.CI_STAGE }}"
+      - name: Compute Greeting
+        id: out
+        run: |
           who="${{ github.event.inputs.who || 'World' }}"
+          echo "greeting=Hello, ${who}" >> $GITHUB_OUTPUT    
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Setup Java
