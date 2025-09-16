@@ -36,6 +36,11 @@ defaults:
 env:
   CI_STAGE: ${{ vars.STAGE_NAMEREPO || 'DEFAULT STAGE' }}
 
+
+concurrency:
+  group: ${{ github.workflow}}-${{ github.ref }} 
+  cancel-in-progress: true
+  
 jobs:
   build-linux:
     runs-on: ubuntu-latest
