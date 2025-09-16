@@ -34,7 +34,7 @@ defaults:
     shell: bash
 
 env:
-  CI_STAGE: ${{ vars.STAGE_NAME || 'DEFAULT STAGE' }}
+  CI_STAGE: ${{ vars.STAGE_NAMEREPO || 'DEFAULT STAGE' }}
 
 jobs:
   build-linux:
