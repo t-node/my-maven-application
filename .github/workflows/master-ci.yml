@@ -142,13 +142,6 @@ build:
           distribution: temurin
           java-version: '21'
 
-jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
   call-reusable:
     uses: ./.github/workflows/reusable.yml
     with:
