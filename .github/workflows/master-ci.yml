@@ -124,7 +124,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Skip if windows and java
         if: ${{ matrix.os == 'windows-latest' && matrix.language == 'java' }}
-        continue: true
+        run: |
+          echo "Skipping job because windows and java"
+          exit 0
       - name: Node setup
         if: ${{ matrix.language == 'node' }}
         uses: actions/setup-node@v4
