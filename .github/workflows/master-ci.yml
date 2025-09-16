@@ -53,6 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build-time: ${{ steps.build-time.outputs.build-time }}
+      greeting: ${{ steps.out.outputs.greeting }}
     steps:
       - name: Print environment variable
         run: |
@@ -62,6 +63,7 @@ jobs:
         run: |
           who="${{ github.event.inputs.who || 'World' }}"
           echo "greeting=Hello, ${who}" >> $GITHUB_OUTPUT 
+          
       - name: Use the output
         run: echo "Greeting: ${{ steps.out.outputs.greeting }}"       
       - name: Checkout repo
