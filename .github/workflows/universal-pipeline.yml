@@ -3,14 +3,14 @@ name: "Universal Pipeline Demo (Java Maven)"
 # ─────────────────────────────────────────────────────────────────────
 # TRIGGERS / EVENTS (covering everything we discussed)
 # ─────────────────────────────────────────────────────────────────────
-on:
-  # Git events with qualifiers (branches / tags / paths)
-  push:
-    branches: [ "main", "rel/*" ]       # Only default + release branches
-    tags:     [ "v*" ]                   # Version-like tags e.g., v1.0.0
-    paths:    [ "**.java", "pom.xml" ]   # Only when Java source or pom changes
-  pull_request:
-    branches: [ "main" ]
+# on:
+#   # Git events with qualifiers (branches / tags / paths)
+#   push:
+#     branches: [ "main", "rel/*" ]       # Only default + release branches
+#     tags:     [ "v*" ]                   # Version-like tags e.g., v1.0.0
+#     paths:    [ "**.java", "pom.xml" ]   # Only when Java source or pom changes
+#   pull_request:
+#     branches: [ "main" ]
 
   # Less common: issue comments (requires this file on default branch!)
   issue_comment:

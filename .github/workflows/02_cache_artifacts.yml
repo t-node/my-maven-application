@@ -1,0 +1,33 @@
+name: "Cache Artifacts"
+
+on:
+  workflow_dispatch: {}
+  push: {}
+
+permissions:
+  contents: read
+
+jobs:
+  cache-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache npm
+        id: cache-node
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os}}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os}}-
+      - name: Install dependencies
+        run: npm ci || true
+      - name: Cache pip
+        id: cache-pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.pip
+          key: ${{ runner.os}}-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os}}-
+    
