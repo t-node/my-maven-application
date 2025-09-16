@@ -1,9 +1,10 @@
 name: "Ultimate Mastery CI/CD"
 on:
   push:
-    branches: ["main","hello"]
+    branches: ["main", "hello"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "hello"]
+    types: [opened, synchronize,reopened]
   workflow_dispatch:
     inputs:
       run-tests:
@@ -14,6 +15,10 @@ on:
         description: "Timeout in minutes"
         type: number
         default: 10
+      who:
+        description: "Who to greet here"
+        type: string
+        default: "World"
       deploy-env:
         description: "Deploy environment"
         required: true
@@ -27,12 +32,39 @@ on:
     types: [external-build]
   schedule:
     - cron: "30 5,15 * * *"
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CI_STAGE: ${{ vars.STAGE_NAMEREPO || 'DEFAULT STAGE' }}
+
+permissions:
+  contents: read
+
+
+concurrency:
+  group: ${{ github.workflow}}-${{ github.ref }} 
+  cancel-in-progress: true
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
     outputs:
       build-time: ${{ steps.build-time.outputs.build-time }}
+      greeting: ${{ steps.out.outputs.greeting }}
     steps:
+      - name: Print environment variable
+        run: |
+          echo "CI Stage ${{ env.CI_STAGE }}"    
+      - name: Compute Greeting
+        id: out
+        run: |
+          who="${{ github.event.inputs.who || 'World' }}"
+          echo "greeting=Hello, ${who}" >> $GITHUB_OUTPUT 
+      - name: UseTHEANSWER
+        run: echo "Greeting: ${{ steps.out.outputs.greeting }}" 
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Setup Java
@@ -53,20 +85,36 @@ jobs:
           path: 'target/*.jar'
       - name: Set build time output
         id: build-time
-        run: echo "build-time=$(date +%s)" >> $GITHUB_OUTPUT
-        
+        run: |
+          echo "builddxpxx-time=$(date +%s)" >> $GITHUB_OUTPUT
+          echo "ci-stages=${{ env.CI_STAGE }}" >> $GITHUB_OUTPUT
+          echo "Build time set: $(date +%s)"
+          echo "CI Stage: ${{ env.CI_STAGE }}"
+
+  call-reusable:
+    uses: ./.github/workflows/reusable.yml
+    with:
+      java-version: '21'
+      artifact-name: 'book.jar'
+    secrets: inherit   # pass through repo/org secrets if needed
+
+
   hello-job:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
-      greeting: ${{ steps.hello.outputs.greeting }}
+      greeting: ${{ steps.hola.outputs.greeting }}
+      bookName: ${{ steps.hola.outputs.bookName }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-      - name: say Hello (Composite  Action Here)
-        uses: ./.github/actions/say-hello
-        id: hello
+
+      - name: say Hola! (Composite  Action Hola!)
+        uses: ./.github/actions/say-Hola!
+        id: hola
         with:
           who: "Linux-${{ runner.os }}"
+          bookname: "LinuxBookAdministration-${{ runner.os }}"
   
   consume-outputs:
     runs-on: ubuntu-latest
@@ -76,25 +124,29 @@ jobs:
         run: |
           echo "Greeting from build-time was: '${{ needs.build-linux.outputs.build-time }}"
           echo "Greeting from hello-job was: '${{ needs.hello-job.outputs.greeting }}"
-  
+          echo "BookName from hello-job was: '${{ needs.hello-job.outputs.bookName }}"
+          
   external-trigger:
     if: github.event_name == 'repository_dispatch' && github.event.action == 'external-build'
     runs-on: ubuntu-latest
     steps:
       - name: Dump external payload
         run: echo '${{ toJson(github.event.client_payload) }}'
-
+   
   deploy:
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs: [build-linux]
     steps:
-      - name: Deploy
+      - name: Deploy to staging
         if: inputs.deploy-env == 'staging'
         run: echo "Deploying to ${{ inputs.deploy-env }}"
+      - name: Deploy to production
         if: inputs.deploy-env == 'production'
-        run: echo "Deploying to production with key ${{ inputs.deploy-env }}"
-
+        run: |
+          echo "Deploying to production with key ${{ secrets.DEPLOY_KEY }}"
+          echo "Production deployment completed"
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
 
   build-matrix:
     runs-on: ${{ matrix.os }}
