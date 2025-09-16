@@ -63,7 +63,7 @@ jobs:
         run: |
           who="${{ github.event.inputs.who || 'World' }}"
           echo "greeting=Hello, ${who}" >> $GITHUB_OUTPUT 
-      - name: UseTHEANSWER
+      - name: UseTheAnswer
         run: echo "Greeting: ${{ steps.out.outputs.greeting }}" 
       - name: Checkout repo
         uses: actions/checkout@v4
