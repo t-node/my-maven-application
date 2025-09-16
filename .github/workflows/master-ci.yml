@@ -56,12 +56,14 @@ jobs:
     steps:
       - name: Print environment variable
         run: |
-          echo "CI Stage ${{ env.CI_STAGE }}"
+          echo "CI Stage ${{ env.CI_STAGE }}"    
       - name: Compute Greeting
         id: out
         run: |
           who="${{ github.event.inputs.who || 'World' }}"
-          echo "greeting=Hello, ${who}" >> $GITHUB_OUTPUT    
+          echo "greeting=Hello, ${who}" >> $GITHUB_OUTPUT 
+      - name: Use the output
+        run: echo "Greeting: ${{ steps.out.outputs.greeting }}"       
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Setup Java
