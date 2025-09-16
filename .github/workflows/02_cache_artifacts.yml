@@ -35,14 +35,14 @@ jobs:
           restore-keys: |
             ${{ runner.os}}-
       - name: Summary (cache hits)
-          run: |
-            {
-              echo "## Cache Results"
-              echo ""
-              echo "- npm cache hit: \`${{ steps.cache-node.outputs.cache-hit || 'false' }}\`"
-              echo "- npm cache hit: \`${{ steps.cache-node.outputs.cache-primary-key || 'false' }}\`"
-              echo "- npm cache hit: \`${{ steps.cache-node.outputs.cache-matched-key || 'false' }}\`"
-              echo "- pip cache hit: \`${{ steps.cache-pip.outputs.cache-hit || 'false' }}\`"
-              echo "- pip cache hit: \`${{ steps.cache-pip.outputs.cache-primary-key || 'false' }}\`"
-              echo "- pip cache hit: \`${{ steps.cache-pip.outputs.cache-matched-key || 'false' }}\`"
-            } >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          {
+            echo "## Cache Results"
+            echo ""
+            echo "- npm cache hit: \`${{ steps.cache-node.outputs.cache-hit || 'false' }}\`"
+            echo "- npm cache hit: \`${{ steps.cache-node.outputs.cache-primary-key || 'false' }}\`"
+            echo "- npm cache hit: \`${{ steps.cache-node.outputs.cache-matched-key || 'false' }}\`"
+            echo "- pip cache hit: \`${{ steps.cache-pip.outputs.cache-hit || 'false' }}\`"
+            echo "- pip cache hit: \`${{ steps.cache-pip.outputs.cache-primary-key || 'false' }}\`"
+            echo "- pip cache hit: \`${{ steps.cache-pip.outputs.cache-matched-key || 'false' }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
