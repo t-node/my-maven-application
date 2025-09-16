@@ -16,7 +16,7 @@ on:
         type: number
         default: 10
       who:
-        description: "Who to greet"
+        description: "Who to greet here"
         type: string
         default: "World"
       deploy-env:
