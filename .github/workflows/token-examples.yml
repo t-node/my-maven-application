@@ -122,7 +122,7 @@ jobs:
 
       # ---- Upload artifact: name/path/if-no-files-found/retention-days/upload-chunk-size ----
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.mkart.outputs.artifact_name }}
           path: build/libs/
@@ -148,7 +148,7 @@ jobs:
           echo "Artifact:    $ARTIFACT_NAME"
 
       - name: Download artifact created by previous job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: downloaded
