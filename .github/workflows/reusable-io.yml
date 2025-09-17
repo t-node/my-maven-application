@@ -32,5 +32,5 @@ jobs:
       id: out
       shell: bash
       run: |
-      echo "value=You said: ${{ inputs.message }}" >> "$GITHUB_OUTPUT"
+        echo "value=You said: ${{ inputs.sayit }}" >> "$GITHUB_OUTPUT"
     
