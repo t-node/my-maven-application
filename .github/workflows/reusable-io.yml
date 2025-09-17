@@ -15,11 +15,11 @@ on:
         description: "The echoed message"
         value: ${{ jobs.echo.outputs.out }}
 
-workflow_dispatch:
-  inputs:
-    description: "A message from the caller"
-    required: true
-    type: string
+  workflow_dispatch:
+    inputs:
+      description: "A message from the caller"
+      required: true
+      type: string
 
 jobs:
   echo:
