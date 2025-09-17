@@ -1,52 +1,47 @@
-name: Phase1 — Cache & Artifacts
+name: Runners demo (ubuntu/macos/windows)
 
-# on:
-#   push: {}
-#   workflow_dispatch: {}
+on:
+  workflow_dispatch: # run this one manually from the Actions tab
 
 permissions:
   contents: read
 
 jobs:
-  cache-and-build:
-    runs-on: ubuntu-latest
+  matrix-info:
+    # Demonstrates "ubuntu-latest", "macos-latest", "windows-latest" labels
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
     steps:
-      - uses: actions/checkout@v4
-
-      # Maven cache
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'maven'
-
-      - name: Cache Maven dependencies
-        id: cache-maven
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: maven-${{ runner.os }}-${{ hashFiles('pom.xml') }}
-          restore-keys: |
-            maven-${{ runner.os }}-
-
-      - name: Install Maven dependencies
-        run: mvn dependency:resolve
-
-      - name: Build Maven project
-        run: mvn clean package -DskipTests
-
-      - name: Upload Maven artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: maven-jar
-          path: target/*.jar
-          retention-days: 3
-
-      - name: Summary (cache hits)
+      - name: Print basic runner info
         run: |
-          {
-            echo "## Cache Results"
-            echo ""
-            echo "- Maven cache hit: \`${{ steps.cache-maven.outputs.cache-hit || 'false' }}\`"
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Runner OS: $RUNNER_OS"
+          echo "Runner Temp: $RUNNER_TEMP"
+          echo "Default shell varies by OS (bash on Linux/macOS, PowerShell on Windows)."
+
+      - name: Show kernel / system details (Linux & macOS)
+        if: runner.os != 'Windows'
+        run: |
+          uname -a
+          sw_vers || true  # prints macOS version when available
+
+      - name: Show system details (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          echo "System info:"
+          systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+
+      # Chapter 5: "Adding Additional Software on Runners" example (Linux)
+      - name: Install an extra package on ubuntu-latest
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tree
+          tree -L 1 .
+
+      - name: Guidance to Included Software list (read the job log)
+        run: |
+          echo "In the job log, expand 'Set up job' → 'Runner Image' → 'Included Software' to see preinstalled tools."
+          echo "SBOMs for runner images are available on the actions/runner-images releases page (as described in the book)."
