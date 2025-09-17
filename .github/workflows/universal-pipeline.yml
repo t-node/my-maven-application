@@ -3,34 +3,34 @@ name: "Universal Pipeline Demo (Java Maven)"
 # ─────────────────────────────────────────────────────────────────────
 # TRIGGERS / EVENTS (covering everything we discussed)
 # ─────────────────────────────────────────────────────────────────────
-on:
-  # Git events with qualifiers (branches / tags / paths)
-  push:
-    branches: [ "main", "rel/*" ]       # Only default + release branches
-    tags:     [ "v*" ]                   # Version-like tags e.g., v1.0.0
-    paths:    [ "**.java", "pom.xml" ]   # Only when Java source or pom changes
-  pull_request:
-    branches: [ "main" ]
+# on:
+#   # Git events with qualifiers (branches / tags / paths)
+#   push:
+#     branches: [ "main", "rel/*" ]       # Only default + release branches
+#     tags:     [ "v*" ]                   # Version-like tags e.g., v1.0.0
+#     paths:    [ "**.java", "pom.xml" ]   # Only when Java source or pom changes
+#   pull_request:
+#     branches: [ "main" ]
 
-  # Less common: issue comments (requires this file on default branch!)
-  issue_comment:
-    types: [ created ]
+#   # Less common: issue comments (requires this file on default branch!)
+#   issue_comment:
+#     types: [ created ]
 
-  # Manual trigger with input
-  workflow_dispatch:
-    inputs:
-      run-tests:
-        description: "Run unit tests?"
-        type: boolean
-        default: true
+#   # Manual trigger with input
+#   workflow_dispatch:
+#     inputs:
+#       run-tests:
+#         description: "Run unit tests?"
+#         type: boolean
+#         default: true
 
-  # External trigger from API (see curl example below)
-  repository_dispatch:
-    types: [ "external-run" ]
+#   # External trigger from API (see curl example below)
+#   repository_dispatch:
+#     types: [ "external-run" ]
 
-  # CRON schedule (NOTE: shorthands like @daily are NOT supported)
-  schedule:
-    - cron: "30 5,15 * * *"   # 05:30 and 15:30 UTC daily
+#   # CRON schedule (NOTE: shorthands like @daily are NOT supported)
+#   schedule:
+#     - cron: "30 5,15 * * *"   # 05:30 and 15:30 UTC daily
 
 # ─────────────────────────────────────────────────────────────────────
 # JOBS

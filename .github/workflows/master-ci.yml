@@ -1,4 +1,5 @@
 name: "Ultimate Mastery CI/CD"
+run-name: Pipeline run by @${{ github.actor }}
 on:
   push:
     branches: ["main", "hello"]
@@ -63,8 +64,28 @@ jobs:
         run: |
           who="${{ github.event.inputs.who || 'World' }}"
           echo "greeting=Hello, ${who}" >> $GITHUB_OUTPUT 
-      - name: UseTHEANSWER
-        run: echo "Greeting: ${{ steps.out.outputs.greeting }}" 
+      - name: Summary (Plan)
+        run: |
+          {
+            echo "## Plan"
+            echo ""
+            echo "- Event: \`${{ github.event_name }}\`"
+            echo "- Who: \`${{ github.event.inputs.who || 'World' }}\`"
+            echo "- CI Stage: \`${{ env.CI_STAGE }}\`"
+            echo "- Greeting: \`${{ steps.out.outputs.greeting }}\`"
+            echo ""
+            echo "## Actions"
+            echo ""
+            echo "- Checkout repo"
+            echo "- Setup Java"
+            echo "- Build with Maven"
+            echo "- Run tests with Maven"
+            echo "- Upload artifact"
+            echo "- Set build time output"
+          } >> "$GITHUB_STEP_SUMMARY"    
+      - name: UseTheAnswer
+        run: |
+          echo "Greeting: ${{ steps.out.outputs.greeting }}" 
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Setup Java
@@ -90,6 +111,52 @@ jobs:
           echo "ci-stages=${{ env.CI_STAGE }}" >> $GITHUB_OUTPUT
           echo "Build time set: $(date +%s)"
           echo "CI Stage: ${{ env.CI_STAGE }}"
+
+  buildjob:
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        language: [java, python, node]
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      - name: Skip if windows and java
+        if: ${{ matrix.os == 'windows-latest' && matrix.language == 'java' }}
+        run: |
+          echo "Skipping job because windows and java"
+          exit 1
+      - name: Node setup
+        if: ${{ matrix.language == 'node' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Python setup
+        if: ${{ matrix.language == 'python' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Java setup
+        if: ${{ matrix.language == 'java' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+  reuse_python:
+      needs: build
+      uses: ./.github/workflows/reusable_ci.yml
+      with:
+        language: python
+        run-tests: false
+      secrets:
+        token: ${{ secrets.MY_TOKEN }}
+
+
 
   call-reusable:
     uses: ./.github/workflows/reusable.yml
