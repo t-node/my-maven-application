@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  call:
+  box:
     uses: ./.github/workflows/reusable-io.yml
     with:
-      message: "Hello from the caller"
+      message: "Hello from the boxer job in here"
