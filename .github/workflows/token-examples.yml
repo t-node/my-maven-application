@@ -43,7 +43,7 @@ jobs:
     outputs:
       build-stage:  ${{ steps.set-debug.outputs.BUILD_STAGE }}
       version:      ${{ steps.version.outputs.value }}
-      artifact_name:${{ steps.mkart.outputs.artifact_name }}
+      artifact_name: ${{ steps.mkart.outputs.artifact_name }}
 
     steps:
       - name: Checkout
