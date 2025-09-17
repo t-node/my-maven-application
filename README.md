@@ -1,0 +1,1 @@
+[![.github/workflows/master-ci.yml](https://github.com/t-node/my-maven-application/actions/workflows/master-ci.yml/badge.svg)](https://github.com/t-node/my-maven-application/actions/workflows/master-ci.yml)

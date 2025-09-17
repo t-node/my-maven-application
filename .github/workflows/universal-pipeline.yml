@@ -64,7 +64,12 @@ jobs:
   #    - Optional tests controlled by manual input
   #    - Producing artifacts (storage)
   linux-ci:
-    if: github.event_name != 'schedule'  # keep cron job separate for clarity
+    if: >
+      github.event_name == 'issue_comment' &&
+      github.event.action == 'created' &&
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/linux') 
+    # keep cron job separate for clarity
     runs-on: ubuntu-latest
     outputs:
       greeting: ${{ steps.hello.outputs.greeting }}
@@ -87,7 +92,7 @@ jobs:
         run: mvn -B -ntp test
 
       - name: Generate demo artifacts (bash)
-        run: ./scripts/generate-report.sh
+        run: bash scripts/generate-report.sh
 
       - name: Say hello (custom composite action)
         id: hello
@@ -123,7 +128,7 @@ jobs:
           cache: 'maven'
       - run: java -version
       - name: Generate artifacts
-        run: ./scripts/generate-report.sh
+        run:  bash scripts/generate-report.sh
       - uses: actions/upload-artifact@v4
         with:
           name: "reports-${{ runner.os }}"

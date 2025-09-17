@@ -27,7 +27,11 @@ jobs:
       - name: Test
         run: mvn test
 
+<<<<<<< HEAD
       # Change path from Gradle to Maven here
+=======
+      # Change path from Gradle to Maven
+>>>>>>> a1ad5bff19862df5d8d5f4446fee2c351dddc54b
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
