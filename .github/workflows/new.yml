@@ -1,8 +1,8 @@
 name: Deployments example
 
-on:
-  push:
-    branches: ["main", "dev"]
+# on:
+#   push:
+#     branches: ["main", "dev"]
 
 permissions:
   contents: write

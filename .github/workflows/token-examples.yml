@@ -50,13 +50,13 @@ jobs:
         uses: actions/checkout@v4
 
       # ---- Built-in caching via a setup-* action (implicit cache) ----
-      # Matches the chapter’s "using caching within setup actions" example.
-      - name: Set up JDK (implicit Gradle cache)
+      # Matches the chapter's "using caching within setup actions" example.
+      - name: Set up JDK (implicit Maven cache)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-          cache: 'gradle'                      # implicit cache managed by the action
+          cache: 'maven'                      # implicit cache managed by the action
 
       # ---- Explicit cache action with key + restore-keys + cross-OS archive ----
       # Demonstrates: key, restore-keys, enableCrossOsArchive, cache-hit output
@@ -65,23 +65,23 @@ jobs:
         shell: bash
         run: echo "date=$(/bin/date -u +'%Y%m%d')" >> "$GITHUB_OUTPUT"
 
-      - name: Cache Gradle directories (explicit)
-        id: cache-gradle
+      - name: Cache Maven directories (explicit)
+        id: cache-maven
         uses: actions/cache@v3
         with:
           path: |                                   # what to cache
-            ~/.gradle/caches
-            ~/.gradle/wrapper
+            ~/.m2/repository
+            ~/.m2/wrapper
           # Key combines runner.os (flavor), a user input prefix, date, and file hashes
-          key: ${{ runner.os }}-gradle-${{ inputs.cache_name }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-maven-${{ inputs.cache_name }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('**/pom.xml', '**/maven-wrapper.properties') }}
           restore-keys: |                           # ordered partial matches (cache hit search)
-            ${{ runner.os }}-gradle-${{ inputs.cache_name }}-
-            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-maven-${{ inputs.cache_name }}-
+            ${{ runner.os }}-maven-
           enableCrossOsArchive: ${{ runner.os == 'Windows' }}     # demo knob from table
           # upload-chunk-size and lookup-only/fail-on-cache-miss also exist; see probe below
 
       - name: Report if cache hit
-        if: ${{ steps.cache-gradle.outputs.cache-hit == 'true' }}
+        if: ${{ steps.cache-maven.outputs.cache-hit == 'true' }}
         run: echo "✅ Explicit cache restored"
 
       # Optional: a "lookup only" probe that doesn't download (and can fail if not found)
@@ -90,8 +90,8 @@ jobs:
         continue-on-error: true
         uses: actions/cache@v3
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-probe-${{ hashFiles('**/*.gradle*') }}
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-probe-${{ hashFiles('**/pom.xml') }}
           lookup-only: true
           fail-on-cache-miss: true
 
@@ -111,13 +111,13 @@ jobs:
             core.setOutput('value', v);
 
       # ---- Build something & create an artifact (simple, repo-agnostic) ----
-      # In a real Gradle project you would run: ./gradlew build
+      # In a real Maven project you would run: mvn clean package
       - name: Make artifact (text file for demo)
         id: mkart
         shell: bash
         run: |
-          mkdir -p build/libs
-          echo "hello from $GITHUB_WORKFLOW on $RUNNER_OS @ ${{ steps.version.outputs.value }}" > build/libs/greetings.txt
+          mkdir -p target
+          echo "hello from $GITHUB_WORKFLOW on $RUNNER_OS @ ${{ steps.version.outputs.value }}" > target/greetings.txt
           echo "artifact_name=greetings-${{ steps.version.outputs.value }}.txt" >> "$GITHUB_OUTPUT"
 
       # ---- Upload artifact: name/path/if-no-files-found/retention-days/upload-chunk-size ----
@@ -125,7 +125,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.mkart.outputs.artifact_name }}
-          path: build/libs/
+          path: target/
           if-no-files-found: error
           retention-days: ${{ inputs.artifact_retention }}
           upload-chunk-size: 4000000
