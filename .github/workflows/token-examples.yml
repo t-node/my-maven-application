@@ -157,7 +157,8 @@ jobs:
         run: |
           ls -R downloaded
           echo "---- file content ----"
-          cat "downloaded/${{ env.ARTIFACT_NAME }}"
+          # Find and read any .txt file in the downloaded directory
+          find downloaded -name "*.txt" -exec cat {} \;
 
   create_issue_on_failure:
     name: Create issue if the run failed (uses inputs.* safely)
