@@ -1,28 +1,28 @@
 name: Manage Data Inputs, Outputs, Artifacts & Cache
 
-on:
-  # Manual trigger to let you pass inputs from the UI
-  workflow_dispatch:
-    inputs:
-      title:                 # demo: using inputs in a workflow
-        description: "Issue title (used only if the job fails)"
-        required: true
-        type: string
-      body:
-        description: "Issue body (used only if the job fails)"
-        required: true
-        type: string
-      artifact_retention:
-        description: "Days to keep uploaded artifacts (1–90, 0 uses repo default)"
-        required: false
-        type: number
-        default: 7
-      cache_name:
-        description: "Prefix to help distinguish cache keys across branches/runs"
-        required: false
-        type: string
-        default: demo-cache
-  push:
+# on:
+#   # Manual trigger to let you pass inputs from the UI
+#   workflow_dispatch:
+#     inputs:
+#       title:                 # demo: using inputs in a workflow
+#         description: "Issue title (used only if the job fails)"
+#         required: true
+#         type: string
+#       body:
+#         description: "Issue body (used only if the job fails)"
+#         required: true
+#         type: string
+#       artifact_retention:
+#         description: "Days to keep uploaded artifacts (1–90, 0 uses repo default)"
+#         required: false
+#         type: number
+#         default: 7
+#       cache_name:
+#         description: "Prefix to help distinguish cache keys across branches/runs"
+#         required: false
+#         type: string
+#         default: demo-cache
+#   push:
     branches: [ main ]
 
 permissions:
