@@ -57,7 +57,7 @@ jobs:
           draft: true
           prerelease: true
           files: dist/*.jar
-          token: ${{ secrets.DEV_TOKEN }}
+       
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
@@ -81,4 +81,4 @@ jobs:
           name: Production
           generate_release_notes: true
           files: dist/*.jar
-          token: ${{ secrets.PROD_TOKEN }}
+          #token: ${{ secrets.PROD_TOKEN }}
