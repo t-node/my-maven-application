@@ -25,12 +25,12 @@ on:
 jobs:
   echo:
     runs-on: ubuntu-latest
-  outputs:
-    out: ${{ steps.out.outputs.value }}
-  steps:
-    - name: Echo input 
-      id: out
-      shell: bash
-      run: |
-        echo "value=You said: ${{ inputs.sayit }}" >> "$GITHUB_OUTPUT"
+    outputs:
+      out: ${{ steps.out.outputs.value }}
+    steps:
+      - name: Echo input 
+        id: out
+        shell: bash
+        run: |
+          echo "value=You said: ${{ inputs.sayit }}" >> "$GITHUB_OUTPUT"
     
