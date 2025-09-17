@@ -1,31 +1,182 @@
-name: Token examples
+name: 01 — Manage Data: Inputs, Outputs, Artifacts & Cache
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  # Manual trigger to let you pass inputs from the UI
+  workflow_dispatch:
+    inputs:
+      title:                 # demo: using inputs in a workflow
+        description: "Issue title (used only if the job fails)"
+        required: true
+        type: string
+      body:
+        description: "Issue body (used only if the job fails)"
+        required: true
+        type: string
+      artifact_retention:
+        description: "Days to keep uploaded artifacts (1–90, 0 uses repo default)"
+        required: false
+        type: number
+        default: 7
+      cache_name:
+        description: "Prefix to help distinguish cache keys across branches/runs"
+        required: false
+        type: string
+        default: demo-cache
+  push:
+    branches: [ main ]
 
 permissions:
-  contents: read
-  issues: write   # raised on the page as an example of augmenting permissions
+  contents: read       # for checkout & reading commits
+  actions: read
+  issues: write        # needed for the optional "create issue on failure" demo
 
 jobs:
-  label-and-api:
-    runs-on: ubuntu-latest
+  build:
+    name: Build & Upload (matrix + caches)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]   # shows cross-OS cache knob
+
+    # Expose selected step outputs as job outputs (used by next job via "needs")
+    outputs:
+      build-stage:  ${{ steps.set-debug.outputs.BUILD_STAGE }}
+      version:      ${{ steps.version.outputs.value }}
+      artifact_name:${{ steps.mkart.outputs.artifact_name }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Example A: pass the workflow token to an action that needs it
-      - name: Auto-label PR
-        uses: actions/labeler@v5
+      # ---- Built-in caching via a setup-* action (implicit cache) ----
+      # Matches the chapter’s "using caching within setup actions" example.
+      - name: Set up JDK (implicit Gradle cache)
+        uses: actions/setup-java@v4
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          distribution: temurin
+          java-version: '17'
+          cache: 'gradle'                      # implicit cache managed by the action
 
-      # Example B: make a REST call with the token (read-only GET shown here)
-      - name: Call GitHub REST API with token
+      # ---- Explicit cache action with key + restore-keys + cross-OS archive ----
+      # Demonstrates: key, restore-keys, enableCrossOsArchive, cache-hit output
+      - name: Compute date (used in cache key)       # example of creating a custom key part
+        id: get-date
+        shell: bash
+        run: echo "date=$(/bin/date -u +'%Y%m%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Gradle directories (explicit)
+        id: cache-gradle
+        uses: actions/cache@v3
+        with:
+          path: |                                   # what to cache
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          # Key combines runner.os (flavor), a user input prefix, date, and file hashes
+          key: ${{ runner.os }}-gradle-${{ inputs.cache_name }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |                           # ordered partial matches (cache hit search)
+            ${{ runner.os }}-gradle-${{ inputs.cache_name }}-
+            ${{ runner.os }}-gradle-
+          enableCrossOsArchive: ${{ runner.os == 'Windows' }}     # demo knob from table
+          # upload-chunk-size and lookup-only/fail-on-cache-miss also exist; see probe below
+
+      - name: Report if cache hit
+        if: ${{ steps.cache-gradle.outputs.cache-hit == 'true' }}
+        run: echo "✅ Explicit cache restored"
+
+      # Optional: a "lookup only" probe that doesn't download (and can fail if not found)
+      - name: Probe cache existence only (no download)
+        id: cache-probe
+        continue-on-error: true
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-probe-${{ hashFiles('**/*.gradle*') }}
+          lookup-only: true
+          fail-on-cache-miss: true
+
+      # ---- Step output via $GITHUB_OUTPUT (DO NOT use ::set-output) ----
+      - name: Set debug stage (step output)
+        id: set-debug
+        shell: bash
+        run: echo "BUILD_STAGE=debug" >> "$GITHUB_OUTPUT"
+
+      # ---- Action that produces an output (capturing output from an action) ----
+      - name: Generate version tag (action output)
+        id: version
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const v = `v${new Date().toISOString().slice(0,10).replace(/-/g,'')}`;
+            core.setOutput('value', v);
+
+      # ---- Build something & create an artifact (simple, repo-agnostic) ----
+      # In a real Gradle project you would run: ./gradlew build
+      - name: Make artifact (text file for demo)
+        id: mkart
+        shell: bash
         run: |
-          curl -sSfL \
-            -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }} \
-            | head -n 20
+          mkdir -p build/libs
+          echo "hello from $GITHUB_WORKFLOW on $RUNNER_OS @ ${{ steps.version.outputs.value }}" > build/libs/greetings.txt
+          echo "artifact_name=greetings-${{ steps.version.outputs.value }}.txt" >> "$GITHUB_OUTPUT"
+
+      # ---- Upload artifact: name/path/if-no-files-found/retention-days/upload-chunk-size ----
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.mkart.outputs.artifact_name }}
+          path: build/libs/
+          if-no-files-found: error
+          retention-days: ${{ inputs.artifact_retention }}
+          upload-chunk-size: 4000000
+
+  report:
+    name: Use job outputs, download artifact, env mapping
+    runs-on: ubuntu-latest
+    needs: build
+    # Cleaner access pattern: map needs.* job outputs into env for the steps
+    env:
+      BUILD_STAGE:   ${{ needs.build.outputs['build-stage'] }}
+      VERSION:       ${{ needs.build.outputs.version }}
+      ARTIFACT_NAME: ${{ needs.build.outputs.artifact_name }}
+
+    steps:
+      - name: Show collected outputs (from previous job)
+        run: |
+          echo "Build stage: $BUILD_STAGE"
+          echo "Version:     $VERSION"
+          echo "Artifact:    $ARTIFACT_NAME"
+
+      - name: Download artifact created by previous job
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: downloaded
+
+      - name: List and read the downloaded artifact
+        run: |
+          ls -R downloaded
+          echo "---- file content ----"
+          cat "downloaded/${{ env.ARTIFACT_NAME }}"
+
+  create_issue_on_failure:
+    name: Create issue if the run failed (uses inputs.* safely)
+    runs-on: ubuntu-latest
+    needs: [build, report]
+    if: failure() && github.event_name == 'workflow_dispatch'   # only on manual runs
+    steps:
+      # ⚠️ UNTRUSTED INPUT WARNING:
+      # Inputs can be attacker-controlled in public repos. Use with care; consider validation.
+      - name: Create GitHub Issue via REST
+        shell: bash
+        run: |
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues \
+            -d @- <<'JSON'
+          {
+            "title": "${{ inputs.title }}",
+            "body":  "Details: ${{ inputs.body }}"
+          }
+          JSON
