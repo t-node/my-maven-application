@@ -34,9 +34,9 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: "temurin"
           java-version: ${{ inputs.java-version }}
-          cache: 'maven'
+          cache: "maven"
 
       # Build
       - name: Build (no tests yet)
