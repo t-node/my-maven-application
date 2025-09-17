@@ -4,8 +4,6 @@ on:
   push:
     branches: ["main", "dev"]
 
-# Keep permissions minimal; the release action needs 'contents: write' if you use GITHUB_TOKEN.
-# If you're passing your own env-specific PATs (DEV_TOKEN/PROD_TOKEN), contents: write is not strictly required here.
 permissions:
   contents: write
 
@@ -16,40 +14,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 11
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "11"
+          java-version: "21"
 
-      # Builds and tests with Gradle; identical to what the page shows.
+      # Change from Gradle to Maven
       - name: Build
-        uses: gradle/gradle-build-action@v3
-        with:
-          arguments: build
+        run: mvn clean package -DskipTests
 
       - name: Test
-        uses: gradle/gradle-build-action@v3
-        with:
-          arguments: test
+        run: mvn test
 
-      # Persist the JAR(s) for later jobs (deploy-dev / deploy-prod)
+      # Change path from Gradle to Maven
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-jars
-          path: build/libs/*.jar
+          path: target/*.jar
 
   deploy-dev:
-    # Only run when pushing to the dev branch, after build passes
     if: github.ref == 'refs/heads/dev'
     needs: [build-and-test]
     runs-on: ubuntu-latest
-
-    # The magic: referencing the 'dev' environment so it gets env-specific vars/secrets
     environment:
       name: dev
-      # This URL appears in the UI for the deployment target (matches the page)
       url: https://github.com/${{ github.repository }}/releases/tag/v${{ vars.DEV_VERSION }}
 
     steps:
@@ -59,7 +49,6 @@ jobs:
           name: app-jars
           path: dist
 
-      # Create a draft, pre-release tagged with the dev version
       - name: GH Release (dev)
         uses: softprops/action-gh-release@v0.1.15
         with:
@@ -68,16 +57,12 @@ jobs:
           draft: true
           prerelease: true
           files: dist/*.jar
-          # If you prefer the built-in token, comment the next line and rely on permissions.contents: write
-          token: ${{ secrets.DEV_TOKEN }}
+       
 
   deploy-prod:
-    # Only run when pushing to the main branch, after build passes
     if: github.ref == 'refs/heads/main'
     needs: [build-and-test]
     runs-on: ubuntu-latest
-
-    # Production environment: will PAUSE here until a reviewer approves (per your protection rule)
     environment:
       name: production
       url: https://github.com/${{ github.repository }}/releases/tag/v${{ vars.PROD_VERSION }}
@@ -89,7 +74,6 @@ jobs:
           name: app-jars
           path: dist
 
-      # Create a formal release with generated notes for prod
       - name: GH Release (prod)
         uses: softprops/action-gh-release@v0.1.15
         with:
@@ -97,5 +81,4 @@ jobs:
           name: Production
           generate_release_notes: true
           files: dist/*.jar
-          # If you prefer the built-in token, comment the next line and rely on permissions.contents: write
-          token: ${{ secrets.PROD_TOKEN }}
+          #token: ${{ secrets.PROD_TOKEN }}

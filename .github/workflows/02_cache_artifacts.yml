@@ -1,8 +1,8 @@
 name: Phase1 — Cache & Artifacts
 
-on:
-  push: {}
-  workflow_dispatch: {}
+# on:
+#   push: {}
+#   workflow_dispatch: {}
 
 permissions:
   contents: read
