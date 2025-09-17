@@ -1,4 +1,4 @@
-name: 01 — Manage Data: Inputs, Outputs, Artifacts & Cache
+name: Manage Data Inputs, Outputs, Artifacts & Cache
 
 on:
   # Manual trigger to let you pass inputs from the UI
