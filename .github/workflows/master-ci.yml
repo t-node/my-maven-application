@@ -1,37 +1,38 @@
 name: "Ultimate Mastery CI/CD"
-# on:
-#   push:
-#     branches: ["main", "hello"]
-#   pull_request:
-#     branches: ["main", "hello"]
-#     types: [opened, synchronize,reopened]
-#   workflow_dispatch:
-#     inputs:
-#       run-tests:
-#         description: "Run unit tests?"
-#         type: boolean
-#         default: true
-#       timeout-minutes:
-#         description: "Timeout in minutes"
-#         type: number
-#         default: 10
-#       who:
-#         description: "Who to greet here"
-#         type: string
-#         default: "World"
-#       deploy-env:
-#         description: "Deploy environment"
-#         required: true
-#         type: choice
-#         default: 'staging'
-#         options:
-#           - staging
-#           - production
-#           - development
-#   repository_dispatch:  # Fixed: Correct indentation
-#     types: [external-build]
-#   schedule:
-#     - cron: "30 5,15 * * *"
+run-name: Pipeline run by @${{ github.actor }}
+on:
+  push:
+    branches: ["main", "hello"]
+  pull_request:
+    branches: ["main", "hello"]
+    types: [opened, synchronize,reopened]
+  workflow_dispatch:
+    inputs:
+      run-tests:
+        description: "Run unit tests?"
+        type: boolean
+        default: true
+      timeout-minutes:
+        description: "Timeout in minutes"
+        type: number
+        default: 10
+      who:
+        description: "Who to greet here"
+        type: string
+        default: "World"
+      deploy-env:
+        description: "Deploy environment"
+        required: true
+        type: choice
+        default: 'staging'
+        options:
+          - staging
+          - production
+          - development
+  repository_dispatch:  # Fixed: Correct indentation
+    types: [external-build]
+  schedule:
+    - cron: "30 5,15 * * *"
 
 defaults:
   run:
