@@ -89,7 +89,7 @@ jobs:
 
   # 3) OPTIONAL: containerized job on self-hosted Linux with Docker installed.
   containerized-on-selfhosted:
-    runs-on: [ self-hosted, linux ] # ensure your runner has Docker
+    runs-on: ubuntu-latest # ensure your runner has Docker
     timeout-minutes: 10
     needs: self-hosted-brew
     container:
