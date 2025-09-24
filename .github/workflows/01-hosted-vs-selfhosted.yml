@@ -50,14 +50,21 @@ jobs:
           SEC
 
   runner-connectivity-check:
-    # Optional PAT with "workflow" scope to run local runner diagnostics
-    if: ${{ secrets.RUNNER_PAT != '' }}
+    # This job runs on self-hosted runners to demonstrate connectivity
     runs-on: [ self-hosted ]
     timeout-minutes: 5
     steps:
-      - name: Explain what will happen
+      - name: Show runner information
         run: |
-          echo "This job demonstrates the idea from the page:"
-          echo "On your runner box, you can run: ./run.sh --check --url https://github.com/${{ github.repository }} --pat ****"
-          echo "We just show the command here; execute it on the runner if you want full diagnostics."
-          echo "./run.sh --check --url https://github.com/${{ github.repository }} --pat <PAT_WITH_WORKFLOW_SCOPE>"
+          echo "This job is running on a self-hosted runner:"
+          echo "Runner name: $RUNNER_NAME"
+          echo "Runner OS: $RUNNER_OS"
+          echo "Runner architecture: $RUNNER_ARCH"
+          echo "Runner workspace: $RUNNER_WORKSPACE"
+          echo "Runner temp: $RUNNER_TEMP"
+      
+      - name: Test GitHub connectivity
+        run: |
+          echo "Testing connectivity to GitHub..."
+          curl -s -o /dev/null -w "%{http_code}" https://api.github.com
+          echo " - GitHub API is reachable"
