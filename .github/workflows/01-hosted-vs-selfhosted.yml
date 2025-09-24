@@ -12,8 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Install gh
-        uses: actions/setup-gh@v1
+      - name: Check gh CLI availability
+        run: |
+          echo "GitHub CLI is pre-installed on GitHub-hosted runners"
+          gh --version
 
       - name: List self-hosted runners
         run: |
