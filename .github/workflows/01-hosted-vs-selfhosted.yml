@@ -1,97 +1,47 @@
-name: Troubleshooting Limits Security Checks
+name: 04 - Ephemeral / JIT (autoscale prep)
 
 on:
   workflow_dispatch:
 
 permissions:
   contents: read
-  actions: write
+  actions: write   # required to generate JIT config
 
 jobs:
-  show-repo-runners:
+  generate-jit-config:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
-      - name: Check gh CLI availability
-        run: |
-          echo "GitHub CLI is pre-installed on GitHub-hosted runners"
-          gh --version
+      - uses: cli/cli-action@v2
 
-      - name: List self-hosted runners
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN || github.token }}
+      - name: Generate JIT runner config (ephemeral)
+        id: jit
         run: |
-          if [ -n "${{ secrets.RUNNER_PAT }}" ]; then
-            echo "Using RUNNER_PAT for enhanced permissions..."
-            gh api repos/${{ github.repository }}/actions/runners --jq '.runners[] | {name, status, busy, os, labels: [ .labels[].name ]}'
-          else
-            echo "Using GITHUB_TOKEN (limited permissions)..."
-            gh api repos/${{ github.repository }}/actions/runners --jq '.runners[] | {name, status, busy, os, labels: [ .labels[].name ]}' || echo "Note: GITHUB_TOKEN may not have sufficient permissions for self-hosted runners API"
-          fi
-          echo
-          echo "If a job is 'Waiting for a runner to pick up this job...', your runner is offline, has mismatched labels/group, or is not reachable."
+          # labels can include "ephemeral" and whatever routing labels you want
+          gh api \
+            -X POST \
+            repos/${{ github.repository }}/actions/runners/generate-jitconfig \
+            -f name="jit-ephemeral-$(date +%s)" \
+            -f work_folder="_work" \
+            -f runner_group_id="" \
+            -f labels="self-hosted,linux,ephemeral" \
+            --jq '.encoded_jit_config' > jitconfig.b64
 
-      - name: Show recent workflow runs + conclusions
-        env:
-          GH_TOKEN: ${{ secrets.RUNNER_PAT || github.token }}
-        run: |
-          if [ -n "${{ secrets.RUNNER_PAT }}" ]; then
-            echo "Using RUNNER_PAT for enhanced permissions..."
-            gh api repos/${{ github.repository }}/actions/runs --jq '.workflow_runs[] | {name, status, conclusion, event, run_number} | .' | head -n 20
-          else
-            echo "Using GITHUB_TOKEN (limited permissions)..."
-            gh api repos/${{ github.repository }}/actions/runs --jq '.workflow_runs[] | {name, status, conclusion, event, run_number} | .' | head -n 20 || echo "Note: GITHUB_TOKEN may not have sufficient permissions"
-          fi
+          echo "encoded=$(cat jitconfig.b64)" >> $GITHUB_OUTPUT
 
-      - name: Print known platform limits (FYI only)
-        run: |
-          cat <<'LIMITS'
-          • Workflow runtime limit: ~35 days (then canceled)
-          • Job queue time: ~24h (if not started → terminated)
-          • API requests: ~1000/hour across all actions in a repo (then fail)
-          • Matrix max jobs: 256 per workflow run
-          • Workflow run queue: ~500 per 10s interval per repo (excess fails to complete)
-          • Queue by Actions: ~within 30 minutes of trigger if services up
-          LIMITS
+      - name: Upload JIT config artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jitconfig
+          path: jitconfig.b64
 
-      - name: Reminder - security guidance for self-hosted
+      - name: Show next step (what to run on your auto-scaling host)
         run: |
-          cat <<'SEC'
-          • Avoid public repos: PRs from forks can run arbitrary code on your machine.
-          • Treat the box as untrusted between jobs unless you reset it (ephemeral runners help).
-          • Control network egress/ingress (VPN/VPC/IP allow list/proxy).
-          • The runner process is a normal user (not root); use sudo as needed.
-          SEC
+          cat <<'JITREADME'
+          To start a JIT ephemeral runner on your host/VM/container:
 
-  runner-connectivity-check:
-    # This job runs on self-hosted runners to demonstrate connectivity
-    runs-on: [ self-hosted ]
-    timeout-minutes: 5
-    steps:
-      - name: Show runner information
-        run: |
-          echo "This job is running on a self-hosted runner:"
-          echo "Runner name: $RUNNER_NAME"
-          echo "Runner OS: $RUNNER_OS"
-          echo "Runner architecture: $RUNNER_ARCH"
-          echo "Runner workspace: $RUNNER_WORKSPACE"
-          echo "Runner temp: $RUNNER_TEMP"
-      
-      - name: Test GitHub connectivity (Windows)
-        if: runner.os == 'Windows'
-        shell: powershell
-        run: |
-          Write-Host "Testing connectivity to GitHub..."
-          try {
-            $response = Invoke-WebRequest -Uri "https://api.github.com" -UseBasicParsing
-            Write-Host " - GitHub API is reachable (HTTP $($response.StatusCode))"
-          } catch {
-            Write-Host " - GitHub API is not reachable: $($_.Exception.Message)"
-          }
+            # Get the latest runner binary for your OS/arch, then:
+            ./run.sh --jitconfig $(cat jitconfig.b64)
 
-      - name: Test GitHub connectivity (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: |
-          echo "Testing connectivity to GitHub..."
-          curl -s -o /dev/null -w "%{http_code}" https://api.github.com
-          echo " - GitHub API is reachable"
+          The runner will pick up exactly ONE job and then remove itself.
+          This is how autoscaling solutions (e.g., GitHub's ARC on Kubernetes or your own) keep runners clean.
+          JITREADME
