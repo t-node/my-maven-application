@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Install gh
-        uses: cli/cli-action@v2
+        uses: actions/setup-gh@v1
 
       - name: List self-hosted runners
         run: |
@@ -63,7 +63,20 @@ jobs:
           echo "Runner workspace: $RUNNER_WORKSPACE"
           echo "Runner temp: $RUNNER_TEMP"
       
-      - name: Test GitHub connectivity
+      - name: Test GitHub connectivity (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Write-Host "Testing connectivity to GitHub..."
+          try {
+            $response = Invoke-WebRequest -Uri "https://api.github.com" -UseBasicParsing
+            Write-Host " - GitHub API is reachable (HTTP $($response.StatusCode))"
+          } catch {
+            Write-Host " - GitHub API is not reachable: $($_.Exception.Message)"
+          }
+
+      - name: Test GitHub connectivity (Linux/macOS)
+        if: runner.os != 'Windows'
         run: |
           echo "Testing connectivity to GitHub..."
           curl -s -o /dev/null -w "%{http_code}" https://api.github.com
