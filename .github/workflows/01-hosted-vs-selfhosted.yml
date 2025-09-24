@@ -1,0 +1,87 @@
+name: 01 - Hosted vs Self-Hosted (basics + brew + artifacts)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Least-privilege default; widen only if a job needs more
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  # Prevents overlapping runs of this workflow on the same branch
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEMO_FILE: filetreelist.txt
+
+jobs:
+  # 1) A tiny task on a GitHub-hosted runner (macOS) using Homebrew, like the page shows.
+  macos-hosted-brew:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (needed if we touch the repo)
+        uses: actions/checkout@v4
+
+      - name: Install `tree` via brew (hosted)
+        run: |
+          brew update
+          brew install tree
+
+      - name: Generate a directory tree listing
+        run: |
+          time tree | tee ${{ env.DEMO_FILE }}
+
+      - name: Upload artifact (tree listing)
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-hosted-tree
+          path: ${{ env.DEMO_FILE }}
+
+  # 2) Same idea, but on YOUR self-hosted runner.
+  self-hosted-brew:
+    # Use the "self-hosted" selector. You can also add your custom labels.
+    runs-on: [ self-hosted ] # or [self-hosted, macOS] / [self-hosted, linux, x64] depending on your machine
+    timeout-minutes: 10
+    needs: macos-hosted-brew
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install `tree` (macOS example)
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install tree
+
+      - name: Install `tree` (Ubuntu example)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tree
+
+      - name: Execute `tree` and capture output
+        run: |
+          time tree | tee ${{ env.DEMO_FILE }}
+
+      - name: Upload artifact (self-hosted tree)
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-hosted-tree
+          path: ${{ env.DEMO_FILE }}
+
+  # 3) OPTIONAL: containerized job on self-hosted Linux with Docker installed.
+  containerized-on-selfhosted:
+    if: runner.os == 'Linux'
+    runs-on: [ self-hosted, linux ] # ensure your runner has Docker
+    timeout-minutes: 10
+    container:
+      image: alpine:3.20
+    steps:
+      - name: Show OS info from inside container
+        run: |
+          uname -a
+          cat /etc/os-release || true
