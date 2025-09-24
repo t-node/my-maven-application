@@ -8,7 +8,7 @@ permissions:
   actions: read
 
 jobs:
-  # A) Use the "object" form to target a runner GROUP + labels.
+  # A) Use the "object" form to target a runner GROUP + labels.here
   use-runner-group:
     # Requires your runner to be in group "scan-runners"
     runs-on:
