@@ -15,7 +15,7 @@ jobs:
       - name: Install gh
         uses: cli/cli-action@v2
 
-      - name: List self-hosted runners (status: online/offline)
+      - name: List self-hosted runners
         run: |
           gh api repos/${{ github.repository }}/actions/runners --jq <<'EOF'
           .runners[] | {name, status, busy, os, labels: [ .labels[].name ]}
