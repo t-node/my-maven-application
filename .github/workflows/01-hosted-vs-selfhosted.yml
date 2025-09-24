@@ -64,9 +64,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y tree
 
-      - name: Execute `tree` and capture output
+      - name: Install `tree` (Windows example)
+        if: runner.os == 'Windows'
+        run: |
+          choco install tree -y
+
+      - name: Execute `tree` and capture output (Unix)
+        if: runner.os != 'Windows'
         run: |
           time tree | tee ${{ env.DEMO_FILE }}
+
+      - name: Execute `tree` and capture output (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          powershell -Command "Measure-Command { tree /f } | Out-String" > ${{ env.DEMO_FILE }}
+          tree /f >> ${{ env.DEMO_FILE }}
 
       - name: Upload artifact (self-hosted tree)
         uses: actions/upload-artifact@v4
