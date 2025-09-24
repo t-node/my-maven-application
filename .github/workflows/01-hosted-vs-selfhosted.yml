@@ -1,4 +1,4 @@
-name: 03 - Troubleshooting, Limits & Security Checks
+name: Troubleshooting Limits Security Checks
 
 on:
   workflow_dispatch:
