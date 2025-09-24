@@ -1,4 +1,4 @@
-name: 02 - Labels & Runner Groups (matrix)
+name: 03 - Troubleshooting, Limits & Security Checks
 
 on:
   workflow_dispatch:
@@ -8,30 +8,51 @@ permissions:
   actions: read
 
 jobs:
-  # A) Use the "object" form to target a runner GROUP + labels.here
-  use-runner-group:
-    # Requires your runner to be in group "scan-runners"
-    runs-on:
-      group: scan-runners
-      labels: [ self-hosted, linux ]  # add "ssd" etc. if you gave those labels
+  show-repo-runners:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - run: |
-          echo "Runner name: $RUNNER_NAME"
-          echo "OS: $RUNNER_OS | Arch: $RUNNER_ARCH | Temp: $RUNNER_TEMP"
+      - name: Install gh
+        uses: cli/cli-action@v2
 
-  # B) Matrix across labels (architecture, disk)
-  matrix-by-labels:
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        labelset:
-          - [ self-hosted, linux, x64 ]
-          - [ self-hosted, linux, arm64 ]
-          # Add custom labels you assigned during registration:
-          # - [ self-hosted, linux, ssd ]
-    runs-on: ${{ matrix.labelset }}
+      - name: List self-hosted runners (status: online/offline)
+        run: |
+          gh api repos/${{ github.repository }}/actions/runners --jq '.runners[] | {name, status, busy, os, labels: [ .labels[].name ]}'
+          echo
+          echo "If a job is 'Waiting for a runner to pick up this job...', your runner is offline, has mismatched labels/group, or is not reachable."
+
+      - name: Show recent workflow runs + conclusions
+        run: |
+          gh api repos/${{ github.repository }}/actions/runs --jq '.workflow_runs[] | {name, status, conclusion, event, run_number} | . ' | head -n 20
+
+      - name: Print known platform limits (FYI only)
+        run: |
+          cat <<'LIMITS'
+          • Workflow runtime limit: ~35 days (then canceled)
+          • Job queue time: ~24h (if not started → terminated)
+          • API requests: ~1000/hour across all actions in a repo (then fail)
+          • Matrix max jobs: 256 per workflow run
+          • Workflow run queue: ~500 per 10s interval per repo (excess fails to complete)
+          • Queue by Actions: ~within 30 minutes of trigger if services up
+          LIMITS
+
+      - name: Reminder - security guidance for self-hosted
+        run: |
+          cat <<'SEC'
+          • Avoid public repos: PRs from forks can run arbitrary code on your machine.
+          • Treat the box as untrusted between jobs unless you reset it (ephemeral runners help).
+          • Control network egress/ingress (VPN/VPC/IP allow list/proxy).
+          • The runner process is a normal user (not root); use sudo as needed.
+          SEC
+
+  runner-connectivity-check:
+    # Optional PAT with "workflow" scope to run local runner diagnostics
+    if: ${{ secrets.RUNNER_PAT != '' }}
+    runs-on: self-hosted
     steps:
-      - run: |
-          echo "Labels used: ${{ join(matrix.labelset, ', ') }}"
-          echo "Runner labels available: $RUNNER_LABELS"
+      - name: Explain what will happen
+        run: |
+          echo "This job demonstrates the idea from the page:"
+          echo "On your runner box, you can run: ./run.sh --check --url https://github.com/${{ github.repository }} --pat ****"
+          echo "We just show the command here; execute it on the runner if you want full diagnostics."
+          echo "./run.sh --check --url https://github.com/${{ github.repository }} --pat <PAT_WITH_WORKFLOW_SCOPE>"
