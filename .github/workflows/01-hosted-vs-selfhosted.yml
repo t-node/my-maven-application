@@ -19,17 +19,29 @@ jobs:
 
       - name: List self-hosted runners
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN || github.token }}
         run: |
-          gh api repos/${{ github.repository }}/actions/runners --jq '.runners[] | {name, status, busy, os, labels: [ .labels[].name ]}'
+          if [ -n "${{ secrets.RUNNER_PAT }}" ]; then
+            echo "Using RUNNER_PAT for enhanced permissions..."
+            gh api repos/${{ github.repository }}/actions/runners --jq '.runners[] | {name, status, busy, os, labels: [ .labels[].name ]}'
+          else
+            echo "Using GITHUB_TOKEN (limited permissions)..."
+            gh api repos/${{ github.repository }}/actions/runners --jq '.runners[] | {name, status, busy, os, labels: [ .labels[].name ]}' || echo "Note: GITHUB_TOKEN may not have sufficient permissions for self-hosted runners API"
+          fi
           echo
           echo "If a job is 'Waiting for a runner to pick up this job...', your runner is offline, has mismatched labels/group, or is not reachable."
 
       - name: Show recent workflow runs + conclusions
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.RUNNER_PAT || github.token }}
         run: |
-          gh api repos/${{ github.repository }}/actions/runs --jq '.workflow_runs[] | {name, status, conclusion, event, run_number} | .' | head -n 20
+          if [ -n "${{ secrets.RUNNER_PAT }}" ]; then
+            echo "Using RUNNER_PAT for enhanced permissions..."
+            gh api repos/${{ github.repository }}/actions/runs --jq '.workflow_runs[] | {name, status, conclusion, event, run_number} | .' | head -n 20
+          else
+            echo "Using GITHUB_TOKEN (limited permissions)..."
+            gh api repos/${{ github.repository }}/actions/runs --jq '.workflow_runs[] | {name, status, conclusion, event, run_number} | .' | head -n 20 || echo "Note: GITHUB_TOKEN may not have sufficient permissions"
+          fi
 
       - name: Print known platform limits (FYI only)
         run: |
