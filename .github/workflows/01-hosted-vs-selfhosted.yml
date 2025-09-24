@@ -1,104 +1,37 @@
-name: HostedvsSelf-Hosted
+name: 02 - Labels & Runner Groups (matrix)
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
-# Least-privilege default; widen only if a job needs more
 permissions:
   contents: read
   actions: read
 
-concurrency:
-  # Prevents overlapping runs of this workflow on the same branch
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  DEMO_FILE: filetreelist.txt
-
 jobs:
-  # 1) A tiny task on a GitHub-hosted runner (macOS) using Homebrew, like the page shows.
-  macos-hosted-brew:
-    runs-on: macos-latest
-    timeout-minutes: 10
+  # A) Use the "object" form to target a runner GROUP + labels.
+  use-runner-group:
+    # Requires your runner to be in group "scan-runners"
+    runs-on:
+      group: scan-runners
+      labels: [ self-hosted, linux ]  # add "ssd" etc. if you gave those labels
     steps:
-      - name: Checkout (needed if we touch the repo)
-        uses: actions/checkout@v4
+      - run: |
+          echo "Runner name: $RUNNER_NAME"
+          echo "OS: $RUNNER_OS | Arch: $RUNNER_ARCH | Temp: $RUNNER_TEMP"
 
-      - name: Install `tree` via brew (hosted)
-        run: |
-          brew update
-          brew install tree
-
-      - name: Generate a directory tree listing
-        run: |
-          time tree | tee ${{ env.DEMO_FILE }}
-
-      - name: Upload artifact (tree listing)
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-hosted-tree
-          path: ${{ env.DEMO_FILE }}
-
-  # 2) Same idea, but on YOUR self-hosted runner.
-  self-hosted-brew:
-    # Use the "self-hosted" selector. You can also add your custom labels.
-    runs-on: [ self-hosted ] # or [self-hosted, macOS] / [self-hosted, linux, x64] depending on your machine
-    timeout-minutes: 10
-    needs: macos-hosted-brew
+  # B) Matrix across labels (architecture, disk)
+  matrix-by-labels:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        labelset:
+          - [ self-hosted, linux, x64 ]
+          - [ self-hosted, linux, arm64 ]
+          # Add custom labels you assigned during registration:
+          # - [ self-hosted, linux, ssd ]
+    runs-on: ${{ matrix.labelset }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install `tree` (macOS example)
-        if: runner.os == 'macOS'
-        run: |
-          brew update
-          brew install tree
-
-      - name: Install `tree` (Ubuntu example)
-        if: ${{ runner.os == 'Linux' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y tree
-
-      - name: Install `tree` (Windows example)
-        if: ${{ runner.os == 'Windows' }}
-        run: |
-          choco install tree -y
-
-      - name: Execute `tree` and capture output (Unix)
-        if: runner.os != 'Windows'
-        run: |
-          time tree | tee ${{ env.DEMO_FILE }}
-
-      - name: Execute `tree` and capture output (Windows)
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: |
-          powershell -Command "Measure-Command { tree /f } | Out-String" > ${{ env.DEMO_FILE }}
-          tree /f >> ${{ env.DEMO_FILE }}
-
-      - name: Upload artifact (self-hosted tree)
-        uses: actions/upload-artifact@v4
-        with:
-          name: self-hosted-tree
-          path: ${{ env.DEMO_FILE }}
-
-  # 3) OPTIONAL: containerized job on self-hosted Linux with Docker installed.
-  containerized-on-selfhosted:
-    runs-on: ubuntu-latest # ensure your runner has Docker
-    timeout-minutes: 10
-    needs: self-hosted-brew
-    container:
-      image: alpine:3.20
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Show OS info from inside container
-        run: |
-          uname -a
-          cat /etc/os-release || true
+      - run: |
+          echo "Labels used: ${{ join(matrix.labelset, ', ') }}"
+          echo "Runner labels available: $RUNNER_LABELS"
