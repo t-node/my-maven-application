@@ -49,7 +49,8 @@ jobs:
     timeout-minutes: 10
     needs: macos-hosted-brew
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install `tree` (macOS example)
         if: runner.os == 'macOS'
@@ -75,12 +76,16 @@ jobs:
 
   # 3) OPTIONAL: containerized job on self-hosted Linux with Docker installed.
   containerized-on-selfhosted:
-    if: ${{ runner.os }} == 'Linux'
     runs-on: [ self-hosted, linux ] # ensure your runner has Docker
     timeout-minutes: 10
+    needs: self-hosted-brew
+    if: runner.os == 'Linux'
     container:
       image: alpine:3.20
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Show OS info from inside container
         run: |
           uname -a
