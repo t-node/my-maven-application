@@ -48,7 +48,8 @@ jobs:
   runner-connectivity-check:
     # Optional PAT with "workflow" scope to run local runner diagnostics
     if: ${{ secrets.RUNNER_PAT != '' }}
-    runs-on: self-hosted
+    runs-on: [ self-hosted ]
+    timeout-minutes: 5
     steps:
       - name: Explain what will happen
         run: |
