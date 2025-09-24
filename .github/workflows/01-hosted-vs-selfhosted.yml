@@ -1,4 +1,4 @@
-name: 01 - Hosted vs Self-Hosted (basics + brew + artifacts)
+name: HostedvsSelf-Hosted
 
 on:
   push:
@@ -79,7 +79,6 @@ jobs:
     runs-on: [ self-hosted, linux ] # ensure your runner has Docker
     timeout-minutes: 10
     needs: self-hosted-brew
-    if: runner.os == 'Linux'
     container:
       image: alpine:3.20
     steps:
