@@ -75,7 +75,7 @@ jobs:
 
   # 3) OPTIONAL: containerized job on self-hosted Linux with Docker installed.
   containerized-on-selfhosted:
-    if: runner.os == 'Linux'
+    if: ${{ runner.os }} == 'Linux'
     runs-on: [ self-hosted, linux ] # ensure your runner has Docker
     timeout-minutes: 10
     container:
