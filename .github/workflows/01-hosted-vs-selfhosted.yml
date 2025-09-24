@@ -17,7 +17,7 @@ jobs:
 
       - name: List self-hosted runners (status: online/offline)
         run: |
-          gh api repos/${{ github.repository }}/actions/runners --jq ".runners[] | {name, status, busy, os, labels: [ .labels[].name ]}"
+          gh api repos/${{ github.repository }}/actions/runners --jq '.runners[] | {name, status, busy, os, labels: [ .labels[].name ]}'
           echo
           echo "If a job is 'Waiting for a runner to pick up this job...', your runner is offline, has mismatched labels/group, or is not reachable."
 
