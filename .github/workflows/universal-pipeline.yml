@@ -1,7 +1,6 @@
 name: Runners demo (ubuntu/macos/windows)
 
 on:
-<<<<<<< HEAD
   # Git events with qualifiers (branches / tags / paths)
   push:
     branches: [ "main", "rel/*" ,"hello"]       # Only default + release branches
@@ -9,9 +8,7 @@ on:
     paths:    [ "**.java", "pom.xml" ]   # Only when Java source or pom changes
   pull_request:
     branches: [ "main" ]
-=======
   workflow_dispatch: # run this one manually from the Actions tab
->>>>>>> main
 
 permissions:
   contents: read
