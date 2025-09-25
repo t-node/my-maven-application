@@ -10,5 +10,5 @@ Java:   $javaVer
 $(Get-Date).ToUniversalTime().ToString("s")Z
 "@ | Out-File -Encoding utf8 reports/summary.txt
 "OK" | Out-File -Encoding utf8 reports/status.txt
-"Demo artifacts for GitHub Actions." | Out-File -Encoding utf8 reports/readme.txt
+"Demo artifacts for GitHub Actions." | Out-File -Encoding utf8 reports/readme1.txt
 Write-Host "Generated demo artifacts: reports/*.txt"
