@@ -65,5 +65,8 @@ jobs:
 
       - name: Pretty-print contexts (toJSON)
         run: |
-          echo "github: ${{ toJSON(github) }}" | head -c 4000
-          echo "job:    ${{ toJSON(job) }}" | head -c 4000
+          echo "github context:"
+          echo "${{ toJSON(github) }}" | head -c 4000
+          echo ""
+          echo "job context:"
+          echo "${{ toJSON(job) }}" | head -c 4000
