@@ -44,7 +44,7 @@ jobs:
       # Workflow functions (format, join, fromJSON, hashFiles, startsWith/endsWith/contains)
       - name: Function sampler (format/join)
         run: |
-          echo "${{ format('Building Java project on {0} @ {1}', github.ref, github.sha) }}"
+          echo "${{ format('Building Java project on {0} @ {1} @{2} @ {3}', github.ref, github.sha, github.event_name, github.event_path) }}"
           echo "${{ join(fromJSON('["compile","test","package","verify"]'), ' | ') }}"
 
       - name: Hash Java sources (hashFiles)
