@@ -16,12 +16,11 @@ on:
     tags:
       - 'v*'            # any v-tag
       - '!v*-rc*'       # but not release candidates
-    # Temporarily removing path filters to ensure workflow triggers
-    # paths:
-    #   - '**/*.java'     # only fire when .java files change
-    #   - 'src/**'        # or anything in src/
-    #   - '!src/test/resources/**'  # ...except test resources
-    #   - 'pom.xml'       # or when POM changes
+    paths:
+      - '**/*.java'     # only fire when .java files change
+      - 'src/**'        # or anything in src/
+      - '!src/test/resources/**'  # ...except test resources
+      - 'pom.xml'       # or when POM changes
 
 jobs:
   explain:
@@ -41,8 +40,6 @@ jobs:
           echo "Event: ${{ github.event_name }}"
           echo "Ref:   ${{ github.ref }}"
           echo "SHA:   ${{ github.sha }}"
-          echo "Changed files:"
-          git diff --name-only HEAD~1 HEAD || echo "No previous commit to compare"
 
       # Workflow functions (format, join, fromJSON, hashFiles, startsWith/endsWith/contains)
       - name: Function sampler (format/join)

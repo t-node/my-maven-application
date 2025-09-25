@@ -1,0 +1,36 @@
+name: Reusable Inputs/Outputs
+
+on:
+  workflow_call:
+    inputs:
+      message:
+        description: "A message from the caller"
+        required: true
+        type: string
+    secrets:
+      token:
+        required: false
+    outputs:
+      echoed:
+        description: "The echoed message"
+        value: ${{ jobs.echo.outputs.out }}
+
+  workflow_dispatch:
+    inputs:
+      sayit:
+        description: "A message from the caller"
+        required: true
+        type: string
+
+jobs:
+  echo:
+    runs-on: ubuntu-latest
+    outputs:
+      out: ${{ steps.out.outputs.value }}
+    steps:
+      - name: Echo input 
+        id: out
+        shell: bash
+        run: |
+          echo "value=You said: ${{ inputs.sayit }}" >> "$GITHUB_OUTPUT"
+    
