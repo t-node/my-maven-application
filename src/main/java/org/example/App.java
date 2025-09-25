@@ -7,11 +7,8 @@ public class App {
     }
 
     public static void main(String[] args) {
-<<<<<<< HEAD
-        String who = System.getenv().getOrDefault("WHOEREWS", "GitHub Actions are new for the first time here");
-=======
-        String who = System.getenv().getOrDefault("WHOERRE", "GitHub Actions are new for the first time oddnly from pr here");
->>>>>>> main
+
+        String who = System.getenv().getOrDefault("WHOEAASSRRE", "GitHub Actions are new for the first time oddnly from pr here");
         System.out.println(hello(who));
     }
 }
