@@ -83,14 +83,22 @@ jobs:
           path: target/*.jar
           retention-days: 30
 
-      - name: Ensure failure status on earlier inclusions
+      - name: Force final job failure based on steps failouts
         if: ${{ always() && steps.maybe_fail.outcome == 'failure' }}
-        run: exit 1
+        run: |
+          echo "Step exit detected - forcing final status"  
+          exit 1
+
+      - name: DEBUG: Current job will have this status
+        if: ${{ always() }}
+        run: |
+          echo "Current step outcomes: maybe_fail.outcome=${{ steps.maybe_fail.outcome }}"
+          echo "This job result will be reported as: needed by create-issue-on-failure check"
 
   # Create an issue when build failed (reusable workflow)
   create-issue-on-failure:
     needs: maven-build
-    if: ${{ always() && needs.maven-build.result == 'failure' }}
+    if: ${{ always() }}
     permissions:
       issues: write
       contents: read
@@ -98,7 +106,9 @@ jobs:
     with:
       title: "Maven Pipeline build failed on ${{ github.ref }} @ ${{ github.sha }}"
       body: |
-        Maven build failed.
+        Status: ${{ needs.maven-build.result }}
+        maven-build.job has non-success job result, reported by pipeline.
+        
         
         **Workflow:** ${{ github.workflow }}
         **Run:** ${{ github.run_number }}
