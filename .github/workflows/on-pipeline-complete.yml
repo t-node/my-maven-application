@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Show conclusion from triggering workflow
-        run: echo "Upstream conclusion: ${{ github.event.workflow_run.conclusion }}"
+        run: echo "Upstream conclusion ${{ github.event.workflow_run.conclusion }}"
 
       - name: Create issue if upstream failed (call reusable)
         if: ${{ github.event.workflow_run.conclusion != 'success' }}
