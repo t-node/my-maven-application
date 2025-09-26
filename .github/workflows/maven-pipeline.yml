@@ -166,7 +166,7 @@ jobs:
           echo "Workflow: ${{ github.workflow }}"
           echo "Run Number: ${{ github.run_number }}"
           echo ""
-          echo "Build Status: ${{ needs.maven-build.result }}"
+          echo "Build Status is: ${{ needs.maven-build.result }}"
           echo "Matrix Status: ${{ needs.maven-matrix-job.result }}"
           echo "Issue Creation: ${{ needs.create-issue-on-failure.result }}"
 
