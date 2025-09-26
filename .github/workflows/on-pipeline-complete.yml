@@ -4,9 +4,7 @@ on:
   workflow_run:
     workflows: ["Pipeline"]
     types: [completed]
-    branches: ['rel/**']        # only when the other workflow ran on rel/**
-    branches-ignore: ['rel/**-preprod']  # cannot combine branches + branches-ignore on the SAME key under the same event block normally,
-                                         # but 'workflow_run' supports branch filters; if you prefer a single list, use 'branches: ["rel/**", "!rel/**-preprod"]'.
+    branches: ['rel/**', '!rel/**-preprod']  # Include rel/** but exclude preprod branches
 
 jobs:
   react:
