@@ -103,4 +103,4 @@ jobs:
 
       - name: Expose contexts (toJSON) – masked where needed
         run: |
-          echo "github: ${{ toJSON(github) }}" | head -c 4000
+          echo "github: ${{ toJSON(github)}}" | head -c 4000
