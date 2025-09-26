@@ -16,10 +16,17 @@ jobs:
     steps:
       - name: Show triggering workflow info
         run: |
-          echo "Name:        ${{ github.event.workflow_run.name }}"
-          echo "Conclusion:  ${{ github.event.workflow_run.conclusion }}"
-          echo "Head branch: ${{ github.event.workflow_run.head_branch }}"
-          echo "Run ID:      ${{ github.event.workflow_run.id }}"
+          echo "=== DEBUGGING INFORMATION ==="
+          echo "Triggered by workflow name: '${{ github.event.workflow_run.name }}'"
+          echo "Expected workflow name:     'Runners demo'"
+          echo "Conclusion:                 '${{ github.event.workflow_run.conclusion }}'"
+          echo "Head branch:               '${{ github.event.workflow_run.head_branch }}'"
+          echo "Run ID:                     '${{ github.event.workflow_run.id }}'"
+          echo "Current branch pattern matching:"
+          echo "  - main:                   included"
+          echo "  - rel/** pattern:         included" 
+          echo "  - rel/**-preprod:         excluded"
+          echo "============================="
 
   create-issue-on-failure:
     # Only run if upstream is not success
