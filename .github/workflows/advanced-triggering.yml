@@ -76,6 +76,7 @@ jobs:
           echo "${{ toJSON(inputs) }}" | head -c 4000
           echo "runner context:"
           echo "${{ toJSON(runner) }}" | head -c 4000
+          
   create-issue:
     needs: explain
     uses: ./.github/workflows/create-failure-issue.yml
