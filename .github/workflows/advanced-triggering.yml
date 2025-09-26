@@ -34,6 +34,12 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+      
+      - name: Call workflow
+        uses: ./.github/workflows/create-failure-issue.yml
+        with:
+          title: "Test Issue"
+          body: "This is a test issue"
 
       - name: Show why we triggered
         run: |
