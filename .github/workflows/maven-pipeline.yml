@@ -86,7 +86,6 @@ jobs:
   # Create an issue when build failed (reusable workflow)
   create-issue-on-failure:
     needs: maven-build
-   
     permissions:
       issues: write
       contents: read
