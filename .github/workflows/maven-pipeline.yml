@@ -42,7 +42,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Demo: count args (simple command)
+      - name: Demo count args (simple command)
         run: echo "args=${{ join(fromJSON('["a","b","c"]'), ',') }}"
 
       - name: Maven compile and test
