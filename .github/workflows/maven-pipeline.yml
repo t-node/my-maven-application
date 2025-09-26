@@ -86,7 +86,7 @@ jobs:
   # Create an issue when build failed (reusable workflow)
   create-issue-on-failure:
     needs: maven-build
-    if: ${{ always() && failure() }}  # prefer success() || failure() patterns over relying on always() alone
+    if: ${{ needs.maven-build.result == 'failure' }}
     permissions:
       issues: write
       contents: read
