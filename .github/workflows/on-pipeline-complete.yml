@@ -1,0 +1,25 @@
+name: After Pipeline Completes
+
+on:
+  workflow_run:
+    workflows: ["Pipeline"]
+    types: [completed]
+    branches: ['rel/**']        # only when the other workflow ran on rel/**
+    branches-ignore: ['rel/**-preprod']  # cannot combine branches + branches-ignore on the SAME key under the same event block normally,
+                                         # but 'workflow_run' supports branch filters; if you prefer a single list, use 'branches: ["rel/**", "!rel/**-preprod"]'.
+
+jobs:
+  react:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show conclusion from triggering workflow
+        run: echo "Upstream conclusion: ${{ github.event.workflow_run.conclusion }}"
+
+      - name: Create issue if upstream failed (call reusable)
+        if: ${{ github.event.workflow_run.conclusion != 'success' }}
+        uses: ./.github/workflows/create-failure-issue.yml
+        with:
+          title: "Follow-up: Pipeline ${{
+            github.event.workflow_run.conclusion }} on ${{ github.event.workflow_run.head_branch }}"
+          body:  "See run ID: ${{ github.event.workflow_run.id }}"
+        secrets: inherit
