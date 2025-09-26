@@ -1,0 +1,205 @@
+name: Maven Pipeline
+
+on:
+  push:
+    # Include all rel/**, but refine to exclude preprod by putting '!' after include
+    branches: ['rel/**', '!rel/**-preprod']
+    # You can combine branches + tags (but not branches + branches-ignore together)
+    tags: ['v*', '!v*-rc*']
+    # Monitor Java source files instead of Go files
+    paths:
+      - '**/*.java'
+      - '**/*.xml'
+      - '**/pom.xml'
+      - '!**/target/**'
+      - '!**/.m2/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  maven-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Maven cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Demo: count args (simple command)
+        run: echo "args=${{ join(fromJSON('["a","b","c"]'), ',') }}"
+
+      - name: Maven compile and test
+        run: |
+          mvn clean compile test
+
+      - name: Maven package
+        run: |
+          mvn package -Dmaven.test.skip=false
+
+      - name: Fail on purpose to exercise status functions
+        id: maybe_fail
+        run: |
+          echo "Simulating a failure"
+          exit 1
+
+      - name: This runs only when the previous step FAILED
+        if: ${{ failure() }}
+        run: echo "failure() detected"
+
+      - name: This runs regardless of pass/fail/cancel (but beware timeouts)
+        if: ${{ always() }}
+        run: echo "always() triggered"
+
+      - name: Upload JAR artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: maven-jar
+          path: target/*.jar
+          retention-days: 30
+
+  # Create an issue when build failed (reusable workflow)
+  create-issue-on-failure:
+    needs: maven-build
+    if: ${{ always() && failure() }}  # prefer success() || failure() patterns over relying on always() alone
+    uses: ./.github/workflows/create-failure-issue.yml
+    with:
+      title: "Maven Pipeline build failed on ${{ github.ref }} @ ${{ github.sha }}"
+      body: |
+        Maven build failed.
+        
+        **Workflow:** ${{ github.workflow }}
+        **Run:** ${{ github.run_number }}
+        **SHA:** ${{ github.sha }}
+        **Branch:** ${{ github.ref }}
+        
+        Please check the build logs for more details.
+    secrets: inherit
+
+  # Run a matrix with different Maven profiles and Java versions
+  maven-matrix-job:
+    needs: [maven-build]
+    if: ${{ success() }}  # only if build didn't fail (change to always() to see both paths)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        java-version: ['21', '17', '11']
+        maven-profile: ['', 'dev', 'prod']
+        platform: ['ubuntu-latest', 'windows-latest']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Show Maven + Java version combination
+        run: |
+          echo "Java version: ${{ matrix.java-version }}"
+          echo "Maven profile: ${{ matrix.maven-profile }}"
+          echo "Platform: ${{ runner.os }}"
+          java -version
+          mvn -version
+
+      - name: Maven compile and test with profile
+        run: |
+          if [ "${{ matrix.maven-profile }}" != "" ]; then
+            mvn clean compile test -P${{ matrix.maven-profile }}
+          else
+            mvn clean compile test
+          fi
+
+  maven-report:
+    needs: [maven-build, create-issue-on-failure, maven-matrix-job]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Generate test report
+        if: ${{ always() }}
+        continue-on-error: true
+        run: |
+          mvn clean test
+          mvn surefire-report:report
+
+      - name: Print statuses (toJSON on needs)
+        run: echo 'Needs status: ${{ toJSON(needs) }}'
+
+      - name: Example of conditional check on ref
+        if: ${{ startsWith(github.ref, 'refs/heads/rel/') && !contains(github.ref, 'preprod') }}
+        run: echo "Release branch that is not preprod"
+
+      - name: Display job results summary
+        run: |
+          echo "=== Maven Pipeline Summary ==="
+          echo "Git SHA: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Run Number: ${{ github.run_number }}"
+          echo ""
+          echo "Build Status: ${{ needs.maven-build.result }}"
+          echo "Matrix Status: ${{ needs.maven-matrix-job.result }}"
+          echo "Issue Creation: ${{ needs.create-issue-on-failure.result }}"
+
+      - name: Upload test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            target/surefire-reports/
+            target/site/surefire-report.html
+          retention-days: 30
+
+  maven-quality-gates:
+    needs: maven-build
+    if: ${{ success() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run static analysis
+        run: |
+          echo "Running Maven static analysis checks"
+          mvn clean compile test-compile
+
+      - name: Check test coverage (if plugin available)
+        run: |
+          echo "Checking for code coverage plugins and running coverage"
+          # Future enhancement: add JaCoCo or similar coverage plugin
