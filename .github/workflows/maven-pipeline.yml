@@ -1,18 +1,18 @@
 name: Maven Pipeline
 
-on:
-  push:
-    # Include all rel/**, but refine to exclude preprod by putting '!' after include
-    branches: ['main','rel/**', '!rel/**-preprod']
-    # You can combine branches + tags (but not branches + branches-ignore together)
-    tags: ['v*', '!v*-rc*']
-    # Monitor Java source files instead of Go files
-    paths:
-      - '**/*.java'
-      - '**/*.xml'
-      - '**/pom.xml'
-      - '!**/target/**'
-      - '!**/.m2/**'
+# on:
+#   push:
+#     # Include all rel/**, but refine to exclude preprod by putting '!' after include
+#     branches: ['main','rel/**', '!rel/**-preprod']
+#     # You can combine branches + tags (but not branches + branches-ignore together)
+#     tags: ['v*', '!v*-rc*']
+#     # Monitor Java source files instead of Go files
+#     paths:
+#       - '**/*.java'
+#       - '**/*.xml'
+#       - '**/pom.xml'
+#       - '!**/target/**'
+#       - '!**/.m2/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.head_ref }}
