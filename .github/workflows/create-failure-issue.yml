@@ -71,6 +71,7 @@ jobs:
           fi
           
           # Parse JSON with error handling
+                    # Parse JSON with error handling
           num="$(python3 <<'PY'
           import sys, json
           try:
@@ -81,12 +82,13 @@ jobs:
                   print("ERROR: " + data["message"])
               else:
                   print("ERROR: Unknown response format")
+                  print("Available keys:", list(data.keys()))
           except json.JSONDecodeError as e:
               print(f"ERROR: Invalid JSON - {e}")
           except Exception as e:
               print(f"ERROR: {e}")
           PY
-          <<< "$resp")"
+                    <<< "$resp")"
           
           # Check if we got an error
           if echo "$num" | grep -q "ERROR:"; then
