@@ -57,17 +57,44 @@ jobs:
           BODY:  ${{ inputs.body }}
         run: |
           set -e
+          # Make the API call and capture response
           resp="$(curl -sS -X POST \
             -H "authorization: Bearer ${TOKEN}" \
             -H "accept: application/vnd.github+json" \
             https://api.github.com/repos/${OWNER}/${REPO}/issues \
             -d "{\"title\":\"${TITLE}\",\"body\":\"${BODY}\"}")"
-          # Parse JSON with Python (available on ubuntu-latest)
-          num="$(python3 - <<'PY'
+          
+          # Check if response is empty or invalid
+          if [ -z "$resp" ]; then
+            echo "Error: Empty response from GitHub API"
+            exit 1
+          fi
+          
+          # Parse JSON with error handling
+          num="$(python3 <<'PY'
           import sys, json
-          print(json.load(sys.stdin).get("number", ""))
+          try:
+              data = json.load(sys.stdin)
+              if "number" in data:
+                  print(data["number"])
+              elif "message" in data:
+                  print("ERROR: " + data["message"])
+              else:
+                  print("ERROR: Unknown response format")
+          except json.JSONDecodeError as e:
+              print(f"ERROR: Invalid JSON - {e}")
+          except Exception as e:
+              print(f"ERROR: {e}")
           PY
           <<< "$resp")"
+          
+          # Check if we got an error
+          if echo "$num" | grep -q "ERROR:"; then
+            echo "Failed to create issue: $num"
+            echo "Raw response: $resp"
+            exit 1
+          fi
+          
           echo "issue_number=$num" >> "$GITHUB_OUTPUT"
           echo "Created issue #$num"
 
