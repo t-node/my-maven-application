@@ -1,26 +1,26 @@
 name: Advanced Triggering Examples
 # NOTE: For any branch-specific push filters to run, this workflow file must EXIST on that branch.
 
-# on:
-#   # 1) Object-based trigger (issues) with activity types
-#   issues:
-#     types: [opened, edited, closed, reopened, labeled, unlabeled, assigned, unassigned, milestoned, demilestoned]
+on:
+  # 1) Object-based trigger (issues) with activity types
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled, assigned, unassigned, milestoned, demilestoned]
 
-#   # 2) push with filters: branches, tags, paths (using glob + negation !)
-#   push:
-#     # You cannot use both "branches" and "branches-ignore" together for the SAME event.
-#     branches:
-#       - main
-#       - 'rel/**'        # all release branches
-#       - '!rel/**-beta'  # EXCLUDE betas via '!' refinement (order matters; exclusion comes after include)
-#     tags:
-#       - 'v*'            # any v-tag
-#       - '!v*-rc*'       # but not release candidates
-#     paths:
-#       - '**/*.java'     # only fire when .java files change
-#       - 'src/**'        # or anything in src/
-#       - '!src/test/resources/**'  # ...except test resources
-#       - 'pom.xml'       # or when POM changes
+  # 2) push with filters: branches, tags, paths (using glob + negation !)
+  push:
+    # You cannot use both "branches" and "branches-ignore" together for the SAME event.
+    branches:
+      - main
+      - 'rel/**'        # all release branches
+      - '!rel/**-beta'  # EXCLUDE betas via '!' refinement (order matters; exclusion comes after include)
+    tags:
+      - 'v*'            # any v-tag
+      - '!v*-rc*'       # but not release candidates
+    paths:
+      - '**/*.java'     # only fire when .java files change
+      - 'src/**'        # or anything in src/
+      - '!src/test/resources/**'  # ...except test resources
+      - 'pom.xml'       # or when POM changes
 
 jobs:
   explain:
