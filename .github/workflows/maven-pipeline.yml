@@ -57,7 +57,7 @@ jobs:
         id: maybe_fail
         run: |
           echo "Simulating a failure"
-          exit 1
+          exit 0
 
       - name: This runs only when the previous step FAILED
         if: ${{ failure() }}
