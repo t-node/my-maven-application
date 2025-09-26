@@ -65,7 +65,7 @@ jobs:
         id: maybe_fail
         run: |
           echo "Simulating a failure"
-          exit 0
+          exit 1
 
       - name: This runs only when the previous step FAILED
         if: ${{ failure() }}
@@ -95,7 +95,6 @@ jobs:
       title: "Maven Pipeline build failed on ${{ github.ref }} @ ${{ github.sha }}"
       body: |
         Maven build failed.
-        
         **Workflow:** ${{ github.workflow }}
         **Run:** ${{ github.run_number }}
         **SHA:** ${{ github.sha }}
