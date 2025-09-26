@@ -89,7 +89,7 @@ jobs:
           echo "Step exit detected - forcing final status"  
           exit 1
 
-      - name: DEBUG: Current job will have this status
+      - name: DEBUG Current job will have this status
         if: ${{ always() }}
         run: |
           echo "Current step outcomes: maybe_fail.outcome=${{ steps.maybe_fail.outcome }}"
