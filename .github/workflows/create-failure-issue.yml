@@ -64,9 +64,9 @@ jobs:
             -d "{\"title\":\"${TITLE}\",\"body\":\"${BODY}\"}")"
           # Parse JSON with Python (available on ubuntu-latest)
           num="$(python3 - <<'PY'
-import sys, json
-print(json.load(sys.stdin).get("number", ""))
-PY
+          import sys, json
+          print(json.load(sys.stdin).get("number", ""))
+          PY
           <<< "$resp")"
           echo "issue_number=$num" >> "$GITHUB_OUTPUT"
           echo "Created issue #$num"
