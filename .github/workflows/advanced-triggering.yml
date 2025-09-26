@@ -22,6 +22,11 @@ on:
       - '!src/test/resources/**'  # ...except test resources
       - 'pom.xml'       # or when POM changes
 
+permissions:
+  # Least-privilege: allow this workflow to write issues; read contents
+  issues: write
+  contents: read
+
 jobs:
   explain:
     runs-on: ubuntu-latest
