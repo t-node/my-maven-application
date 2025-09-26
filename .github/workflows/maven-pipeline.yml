@@ -73,7 +73,10 @@ jobs:
 
       - name: This runs regardless of pass/fail/cancel (but beware timeouts)
         if: ${{ always() }}
-        run: echo "always() triggered"
+        run: |
+          echo "always() triggered"
+          echo "Checking job status..." 
+          echo "This would see failure of previous step"
 
       - name: Upload JAR artifact
         if: ${{ always() }}
@@ -86,7 +89,7 @@ jobs:
   # Create an issue when build failed (reusable workflow)
   create-issue-on-failure:
     needs: maven-build
-    if: ${{ needs.maven-build.result == 'failure' }}
+    if: ${{ always() && needs.maven-build.result == 'failure' }}
     permissions:
       issues: write
       contents: read
