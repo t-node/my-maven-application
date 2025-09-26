@@ -3,7 +3,7 @@ name: Maven Pipeline
 on:
   push:
     # Include all rel/**, but refine to exclude preprod by putting '!' after include
-    branches: ['rel/**', '!rel/**-preprod']
+    branches: ['main','rel/**', '!rel/**-preprod']
     # You can combine branches + tags (but not branches + branches-ignore together)
     tags: ['v*', '!v*-rc*']
     # Monitor Java source files instead of Go files
