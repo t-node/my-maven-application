@@ -152,7 +152,7 @@ jobs:
           mvn surefire-report:report
 
       - name: Print statuses (toJSON on needs)
-        run: echo 'Needs status: ${{ toJSON(needs) }}'
+        run: echo 'Needs status ${{ toJSON(needs) }}'
 
       - name: Example of conditional check on ref
         if: ${{ startsWith(github.ref, 'refs/heads/rel/') && !contains(github.ref, 'preprod') }}
