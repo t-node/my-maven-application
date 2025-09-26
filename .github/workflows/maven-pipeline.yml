@@ -83,9 +83,14 @@ jobs:
           path: target/*.jar
           retention-days: 30
 
+      - name: Ensure failure status on earlier inclusions
+        if: ${{ always() && steps.maybe_fail.outcome == 'failure' }}
+        run: exit 1
+
   # Create an issue when build failed (reusable workflow)
   create-issue-on-failure:
     needs: maven-build
+    if: ${{ always() && needs.maven-build.result == 'failure' }}
     permissions:
       issues: write
       contents: read
