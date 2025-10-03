@@ -23,3 +23,10 @@ jobs:
         run: |
           # The value is passed through the environment, preventing evaluation in the shell.
           echo "$DATA_VALUE"
+      - name: Unsafe - printing a secret directly
+        run: echo ${{ secrets.SIDEMO_SECRET }}
+      - name: Safe - load secret via env so it cannot be executed
+        env:
+          DATA_VALUE: ${{ secrets.SIDEMO_SECRET }}
+        run: |
+          echo "$DATA_VALUE"
