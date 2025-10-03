@@ -61,7 +61,7 @@ jobs:
         run: |
           set -e
           echo "This request should fail due to {} permissions."
-          curl -f -s -H "authorization: Bearer $GH_TOKEN"             https://api.github.com/repos/$REPO || true
+          curl -f -s -H "authorization: Bearer xxx"             https://api.github.com/repos/$REPO || true
 
   use-pat-secret:
     name: Call API with PAT stored as secret
