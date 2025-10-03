@@ -1,0 +1,76 @@
+name: PR vs PR Target Demo
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    types: [opened, synchronize, reopened]
+  pull_request_target:
+    branches: [ "main" ]
+    types: [opened, synchronize, reopened]
+
+# Default to read-only everywhere; elevate per-job only when necessary
+permissions: { contents: read }
+
+jobs:
+  pr_ci:
+    name: CI on PR code (read-only token)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR code safely
+        uses: actions/checkout@v4
+
+      - name: Show context
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "PR #: ${{ github.event.pull_request.number }}"
+          echo "Repo: ${{ github.repository }}"
+
+      - name: Demonstrate read-only token (attempt label add should fail)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -e
+          echo "Trying to add label with read-only token (expected to fail)"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            -H "authorization: Bearer $GH_TOKEN" \
+            -H "accept: application/vnd.github+json" \
+            https://api.github.com/repos/$REPO/issues/$PR/labels \
+            -d '{"labels":["demo-readonly"]}') || true
+          echo "HTTP status: $STATUS (201 means success; 401/403 expected here)"
+
+  pr_target_admin:
+    name: Privileged automation (no checkout of PR code)
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Show context
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "PR #: ${{ github.event.pull_request.number }}"
+          echo "Repo: ${{ github.repository }}"
+
+      - name: Safely add a label via REST (no checkout)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -e
+          echo "Adding label with target-context permissions"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            -H "authorization: Bearer $GH_TOKEN" \
+            -H "accept: application/vnd.github+json" \
+            https://api.github.com/repos/$REPO/issues/$PR/labels \
+            -d '{"labels":["demo-added-by-target"]}')
+          echo "HTTP status: $STATUS (expect 201)"
+
+      # IMPORTANT: Do NOT checkout or run PR code here. That would expose secrets/write perms to untrusted code.
+
