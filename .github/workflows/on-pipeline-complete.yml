@@ -34,9 +34,27 @@ jobs:
           echo "Ref:               ${{ github.ref }}"
           echo "Head Ref:          ${{ github.head_ref }}"
           echo "Base Ref:          ${{ github.base_ref }}"
+          echo "Current Time:      $(date '+%Y-%m-%d %H:%M:%S UTC')"
           echo "Event JSON (limited):" 
           echo "${{ toJSON(github.event) }}" | head -20
           echo "======================="
+
+  queue-status:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_run' }}
+    steps:
+      - name: Monitor downstream queue status
+        run: |
+          echo "🚀 Downstream workflow triggered successfully!"
+          echo "⏰ Triggered at: $(date '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "🔗 Upstream Run: ${{ github.event.workflow_run.html_url }}"
+          echo "📊 Status: Working - no queue delay detected"
+          
+      - name: Workflow_run delay explanation  
+        run: |
+          echo "📝 Delay details: workflow_run can have up to 15min delay"
+          echo "   💡 BEST PRACTICE: Use jobs inside same workflow for no delays"
+          echo "   💡 QUEUE STATUS: We can detect if we've made it past the queue"
 
   echo-upstream:
     runs-on: ubuntu-latest

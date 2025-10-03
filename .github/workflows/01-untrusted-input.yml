@@ -1,0 +1,25 @@
+name: 01 — Untrusted input & secrets (unsafe vs safe)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+# Keep default read-only permissions; we will opt-up only where needed
+permissions: read-all
+
+jobs:
+  show-unsafe-and-safe-echo:
+    name: Demo echo of untrusted input & secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Unsafe — DO NOT DO THIS (evaluates data as shell)
+        # If a commit message contains shell, this interpolates into the shell and may execute.
+        # This is intentionally unsafe to mirror the book’s example.
+        run: echo ${{ github.event.head_commit.message }}
+      - name: Safe — capture untrusted input into env, then echo
+        env:
+          DATA_VALUE: ${{ github.event.head_commit.message }}
+        run: |
+          # The value is passed through the environment, preventing evaluation in the shell.
+          echo "$DATA_VALUE"

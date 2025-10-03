@@ -1,0 +1,14 @@
+name: Repo Dispatch Listener
+
+on:
+  repository_dispatch:
+    types: [external_event]
+
+jobs:
+  handle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show client payload (fromJSON + toJSON)
+        run: |
+          echo 'Payload: ${{ toJSON(github.event.client_payload) }}'
+          echo 'Name:    ${{ fromJSON(toJSON(github.event.client_payload)).name || '' }}'

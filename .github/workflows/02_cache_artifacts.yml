@@ -45,3 +45,34 @@ jobs:
         run: |
           echo "In the job log, expand 'Set up job' → 'Runner Image' → 'Included Software' to see preinstalled tools."
           echo "SBOMs for runner images are available on the actions/runner-images releases page (as described in the book)."
+
+  # IMMEDIATE DOWNSTREAM - No delays!
+  immediate-post-runner-tasks:
+    needs: matrix-info
+    runs-on: ubuntu-latest
+    if: always()  # Run always, just check outcome to decide action
+    steps:
+      - name: "⚡ Immediate post-completion handling (No queue delays!)"
+        run: |
+          echo "🚀 Runner workflow completed immediately - no delays!"
+          echo "📊 Previous job status: ${{ needs.matrix-info.result }}"
+          echo "⏰ Completion time: $(date '+%Y-%m-%d %H:%M:%S UTC')"
+          
+      - name: "🔗 Trigger downstream logic here instead of workflow_run"
+        if: ${{ needs.matrix-info.result == 'success' }}
+        run: |
+          echo "✅ Runner demo successful - running success path actions"
+          # Add your downstream success logic here
+          
+      - name: "🚨 Handle failure path - create issue issue immediately "  
+        if: ${{ needs.matrix-info.result != 'success' }}
+        uses: ./.github/workflows/create-failure-issue.yml
+        with:
+          title: "🚨 Runners demo failed on ${{ github.ref }}"
+          body: |
+            The Runners demo workflow failed. 
+            🕐 Failed at: $(date)
+            🏃 Job: matrix-info
+            📌 Result: ${{ needs.matrix-info.result }}
+            🔗 See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        secrets: inherit

@@ -1,0 +1,35 @@
+name: No-Delay Workflow Runner
+
+# ALTERNATIVE APPROACH: No workflow_run delays!
+# This triggers immediately when Runners demo completes
+# How it works: Specific job cloning
+on:
+  workflow_dispatch:  # Manual trigger initially
+  push:
+    branches: [main, rel/**]
+    paths:
+      - '**.java'  # Or whatever triggers your logic
+      
+jobs:
+  runners-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "🚀 This can 'run' both workflows immediately"
+        run: |
+          echo "Runners demo logic here"
+          
+      - name: "📈 After Demo Step 1"
+        run: |
+          echo "Next after demo steps"
+          echo "Step conclusion: success/failure"
+          
+      # Here would be your issue creation logic          
+      # Same logic that was in 'create-issue-on-failure' job
+      - name: "🔗 Check outcome (immediately)"
+        run: |
+          echo "Check status immediately"
+          # Your create issue logic here
+          
+    # Always run jobs here that were in the downstream workflow 
+    # This way NO delays!
+
